@@ -1,4 +1,3 @@
-
 pub enum MyMesh {
     Sphere,
     Cube,

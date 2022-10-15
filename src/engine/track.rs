@@ -18,10 +18,14 @@ pub struct Track {
     pub texture0: Option<Texture2D>,
 
     pub uniforms: Vec<(String, Uniform)>,
+
+    pub output_name: String,
+
+    pub clear_color: Option<Color>,
 }
 
 impl Track {
-    pub fn new() -> Self {
+    pub fn new(name: String) -> Self {
         let vertex_shader = DEFAULT_VERTEX_SHADER.to_string();
         let fragment_shader = DEFAULT_FRAGMENT_SHADER.to_string();
 
@@ -68,6 +72,10 @@ impl Track {
             texture0: None,
 
             uniforms: vec![],
+
+            output_name: name,
+
+            clear_color: None,
         }
     }
 }
@@ -75,8 +83,13 @@ impl Track {
 pub fn render_track(track: &mut Track) {
     set_camera(&track.camera);
 
-    clear_background(LIGHTGRAY);
+    if let Some(clear_color) = track.clear_color {
+        clear_background(clear_color);
+    } else {
+        clear_background(WHITE);
+    }
 
+    // Useless grid? 
     draw_grid(
         20,
         1.,

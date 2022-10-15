@@ -28,16 +28,29 @@ pub struct AppState {
     pub show_gui: bool,
 
     pub built_in_uniforms: BuiltInUniforms,
+
+    pub skin: macroquad::ui::Skin,
 }
 
 impl AppState {
     pub fn new(num_tracks: usize) -> Self {
         let mut m: MaterialParams = Default::default();
         for i in 0..num_tracks {
-            m.textures.push(format!("iChannel{}",i).to_owned());
+            m.textures.push(format!("iChannel{}", i).to_owned());
+            m.uniforms.push((
+                format!("iChannelResolution{}", i).to_owned(),
+                UniformType::Float3,
+            ));
+            m.uniforms
+                .push((format!("iChannelTime{}", i).to_owned(), UniformType::Float1));
         }
 
         m.uniforms.push(("iTime".to_owned(), UniformType::Float1));
+        m.uniforms
+            .push(("iTimeDelta".to_owned(), UniformType::Float1));
+        m.uniforms
+            .push(("iResolution".to_owned(), UniformType::Float3));
+        m.uniforms.push(("iFrame".to_owned(), UniformType::Float1));
 
         let post_processing_material =
             load_material(CRT_VERTEX_SHADER, CRT_FRAGMENT_SHADER, m).unwrap();
@@ -58,6 +71,7 @@ impl AppState {
             show_gui: false,
 
             built_in_uniforms: BuiltInUniforms::new(),
+            skin: root_ui().default_skin(),
         }
     }
 }
@@ -68,32 +82,33 @@ pub fn render_gui(app_state: &mut AppState) {
     let track = &mut app_state.tracks[app_state.selected_track];
     let mut need_update = false;
 
-    widgets::Window::new(hash!(), vec2(20., 20.), vec2(470., 650.))
+    widgets::Window::new(hash!(), vec2(20., 20.), vec2(800.0, 650.))
         .label("Shader")
         .ui(&mut *root_ui(), |ui| {
+            ui.push_skin(&app_state.skin);
             ui.label(
                 None,
                 &format!("Selected track: {}", &app_state.selected_track),
             );
             ui.label(None, "Camera: ");
-            ui.same_line(0.0);
+            // ui.same_line(0.0);
             if ui.button(None, "Ortho") {
                 track.camera.projection = Projection::Orthographics;
             }
-            ui.same_line(0.0);
+            // ui.same_line(0.0);
             if ui.button(None, "Perspective") {
                 track.camera.projection = Projection::Perspective;
             }
             ui.label(None, "Mesh: ");
-            ui.same_line(0.0);
+            // ui.same_line(0.0);
             if ui.button(None, "Sphere") {
                 track.mesh = MyMesh::Sphere;
             }
-            ui.same_line(0.0);
+            // ui.same_line(0.0);
             if ui.button(None, "Cube") {
                 track.mesh = MyMesh::Cube;
             }
-            ui.same_line(0.0);
+            // ui.same_line(0.0);
             if ui.button(None, "Plane") {
                 track.mesh = MyMesh::Plane;
             }
@@ -439,6 +454,8 @@ uniform sampler2D Texture;
 uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 
+uniform vec3 iResolution;
+
 // https://www.shadertoy.com/view/XtlSD7
 vec2 CRTCurveUV(vec2 uv)
 {
@@ -466,10 +483,10 @@ void main() {
     vec2 crtUV = CRTCurveUV(uv);
     
     // vec3 res = texture2D(Texture, uv).rgb * color.rgb;
-
-    vec3 channel0 = texture2D(iChannel0, uv).rgb;
-    vec3 channel1 = texture2D(iChannel1, uv).rgb;
-    vec3 res = channel0 + channel1;
+    vec2 mehuv = vec2(1.0-crtUV.x, 1.0-crtUV.y);
+    vec3 channel0 = texture2D(iChannel0, mehuv).rgb;
+    vec3 channel1 = texture2D(iChannel1, mehuv).rgb;
+    vec3 res = mix(channel0, channel1, sin(iTime) * 0.5 + 0.5);
  	
     if (crtUV.x < 0.0 || crtUV.x > 1.0 || crtUV.y < 0.0 || crtUV.y > 1.0)
     {
