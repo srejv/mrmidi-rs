@@ -5,13 +5,11 @@ use macroquad::ui::{
     widgets::{self, Label, TreeNode},
 };
 
-use crate::engine::color_picker::color_picker_texture;
-use crate::engine::track::Track;
 use crate::engine::built_in_uniforms::BuiltInUniforms;
+use crate::engine::color_picker::color_picker_texture;
 use crate::engine::mesh::MyMesh;
+use crate::engine::track::Track;
 use crate::engine::uniform::Uniform;
-
-
 
 pub struct AppState {
     pub selected_track: usize,
@@ -33,9 +31,16 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(num_tracks: usize) -> Self {
+        let mut m: MaterialParams = Default::default();
+        for i in 0..num_tracks {
+            m.textures.push(format!("iChannel{}",i).to_owned());
+        }
+
+        m.uniforms.push(("iTime".to_owned(), UniformType::Float1));
+
         let post_processing_material =
-            load_material(CRT_VERTEX_SHADER, CRT_FRAGMENT_SHADER, Default::default()).unwrap();
+            load_material(CRT_VERTEX_SHADER, CRT_FRAGMENT_SHADER, m).unwrap();
 
         let (color_picker_texture, color_picker_image) = color_picker_texture(200, 200);
 
@@ -371,13 +376,25 @@ pub fn update_builtin_uniforms(app_state: &mut AppState) {
     let month = 10.0;
     let day = 15.0;
     let second = 0.0;
-    app_state.built_in_uniforms.update_date(year, month, day, second);
-    
-    app_state.post_processing_material.set_uniform("iDate", &app_state.built_in_uniforms.i_date);
-    app_state.post_processing_material.set_uniform("iFrame", &app_state.built_in_uniforms.i_frame);
-    app_state.post_processing_material.set_uniform("iFrameRate", &app_state.built_in_uniforms.i_frame_rate);
-    app_state.post_processing_material.set_uniform("iMouse", &app_state.built_in_uniforms.i_mouse);
-    app_state.post_processing_material.set_uniform("iResolution", &app_state.built_in_uniforms.i_resolution);
+    app_state
+        .built_in_uniforms
+        .update_date(year, month, day, second);
+
+    app_state
+        .post_processing_material
+        .set_uniform("iDate", &app_state.built_in_uniforms.i_date);
+    app_state
+        .post_processing_material
+        .set_uniform("iFrame", &app_state.built_in_uniforms.i_frame);
+    app_state
+        .post_processing_material
+        .set_uniform("iFrameRate", &app_state.built_in_uniforms.i_frame_rate);
+    app_state
+        .post_processing_material
+        .set_uniform("iMouse", &app_state.built_in_uniforms.i_mouse);
+    app_state
+        .post_processing_material
+        .set_uniform("iResolution", &app_state.built_in_uniforms.i_resolution);
 }
 
 pub fn render_post_process(app_state: &mut AppState) {
@@ -385,20 +402,28 @@ pub fn render_post_process(app_state: &mut AppState) {
     set_default_camera();
     clear_background(WHITE);
 
-    for track in &mut app_state.tracks {
-        gl_use_material(app_state.post_processing_material);
-        draw_texture_ex(
-            track.render_target.texture,
-            0.,
-            0.,
-            Color::new(1.0, 0.0, 0.0, 1.0), // WHITE
-            DrawTextureParams {
-                dest_size: Some(vec2(screen_width(), screen_height())),
-                ..Default::default()
-            },
-        );
-        gl_use_default_material();
-    }
+    app_state
+        .post_processing_material
+        .set_texture("iChannel0", app_state.tracks[0].render_target.texture);
+    app_state
+        .post_processing_material
+        .set_texture("iChannel1", app_state.tracks[1].render_target.texture);
+
+    let texture = app_state.tracks[app_state.selected_track]
+        .render_target
+        .texture;
+    gl_use_material(app_state.post_processing_material);
+    draw_texture_ex(
+        texture,
+        0.,
+        0.,
+        Color::new(1.0, 1.0, 1.0, 1.0), // WHITE
+        DrawTextureParams {
+            dest_size: Some(vec2(screen_width(), screen_height())),
+            ..Default::default()
+        },
+    );
+    gl_use_default_material();
 }
 
 const CRT_FRAGMENT_SHADER: &'static str = r#"#version 100
@@ -407,7 +432,13 @@ varying vec4 color;
 varying vec2 uv;
 
 
+uniform float iTime;
+
 uniform sampler2D Texture;
+
+uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
+
 // https://www.shadertoy.com/view/XtlSD7
 vec2 CRTCurveUV(vec2 uv)
 {
@@ -425,7 +456,7 @@ void DrawVignette( inout vec3 color, vec2 uv )
 }
 void DrawScanline( inout vec3 color, vec2 uv )
 {
-    float iTime = 0.1;
+    // float iTime = 0.1;
     float scanline 	= clamp( 0.95 + 0.05 * cos( 3.14 * ( uv.y + 0.008 * iTime ) * 240.0 * 1.0 ), 0.0, 1.0 );
     float grille 	= 0.85 + 0.15 * clamp( 1.5 * cos( 3.14 * uv.x * 640.0 * 1.0 ), 0.0, 1.0 );    
     color *= scanline * grille * 1.2;
@@ -434,7 +465,11 @@ void main() {
     
     vec2 crtUV = CRTCurveUV(uv);
     
-    vec3 res = texture2D(Texture, uv).rgb * color.rgb;
+    // vec3 res = texture2D(Texture, uv).rgb * color.rgb;
+
+    vec3 channel0 = texture2D(iChannel0, uv).rgb;
+    vec3 channel1 = texture2D(iChannel1, uv).rgb;
+    vec3 res = channel0 + channel1;
  	
     if (crtUV.x < 0.0 || crtUV.x > 1.0 || crtUV.y < 0.0 || crtUV.y > 1.0)
     {
@@ -442,6 +477,8 @@ void main() {
     } 
     DrawVignette(res, crtUV);
     DrawScanline(res, uv);
+
+
     gl_FragColor = vec4(res, 1.0);
 }
 "#;

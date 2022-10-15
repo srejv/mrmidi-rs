@@ -88,9 +88,7 @@ pub fn render_track(track: &mut Track) {
     match track.mesh {
         MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), track.texture0, WHITE),
         MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., track.texture0, WHITE),
-        MyMesh::Cube => {
-            draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), track.texture0, WHITE)
-        }
+        MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), track.texture0, WHITE),
     }
     gl_use_default_material();
 }

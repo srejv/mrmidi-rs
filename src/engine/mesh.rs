@@ -1,7 +1,6 @@
 
-    pub enum MyMesh {
-        Sphere,
-        Cube,
-        Plane,
-    }
-
+pub enum MyMesh {
+    Sphere,
+    Cube,
+    Plane,
+}
