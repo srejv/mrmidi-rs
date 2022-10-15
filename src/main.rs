@@ -12,7 +12,7 @@ const NUM_TRACKS : usize = 2;
 
 #[macroquad::main("mrmidi-rs")]
 async fn main() {
-    let ferris = load_texture("examples/rust.png").await.unwrap();
+    let ferris = load_texture("assets/rust.png").await.unwrap();
     let mut app_state = AppState::new(NUM_TRACKS);
 
     for i in 0..NUM_TRACKS {
