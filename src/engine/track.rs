@@ -26,8 +26,8 @@ pub struct Track {
 
 impl Track {
     pub fn new(name: String) -> Self {
-        let vertex_shader = DEFAULT_VERTEX_SHADER.to_string();
-        let fragment_shader = DEFAULT_FRAGMENT_SHADER.to_string();
+        let vertex_shader = std::fs::read_to_string("assets/shaders/default.vert").unwrap();
+        let fragment_shader = std::fs::read_to_string("assets/shaders/default.frag").unwrap();
 
         let pipeline_params = PipelineParams {
             depth_write: true,
@@ -38,15 +38,21 @@ impl Track {
         let render_target = render_target(320, 150);
         render_target.texture.set_filter(FilterMode::Nearest);
 
-        let material = load_material(
-            &vertex_shader,
-            &fragment_shader,
-            MaterialParams {
-                pipeline_params,
-                ..Default::default()
-            },
-        )
-        .unwrap();
+        let mut material_params = MaterialParams {
+            pipeline_params,
+            ..Default::default()
+        };
+        material_params
+            .uniforms
+            .push(("iTime".to_owned(), UniformType::Float1));
+        material_params
+            .uniforms
+            .push(("iTimeDelta".to_owned(), UniformType::Float1));
+        material_params
+            .uniforms
+            .push(("iFrame".to_owned(), UniformType::Int1));
+
+        let material = load_material(&vertex_shader, &fragment_shader, material_params).unwrap();
 
         let mesh = MyMesh::Sphere;
 
@@ -89,7 +95,6 @@ pub fn render_track(track: &mut Track) {
         clear_background(WHITE);
     }
 
-    // Useless grid? 
     draw_grid(
         20,
         1.,
@@ -105,25 +110,3 @@ pub fn render_track(track: &mut Track) {
     }
     gl_use_default_material();
 }
-
-const DEFAULT_FRAGMENT_SHADER: &'static str = "#version 100
-precision lowp float;
-varying vec2 uv;
-uniform sampler2D Texture;
-void main() {
-    gl_FragColor = texture2D(Texture, uv);
-}
-";
-
-const DEFAULT_VERTEX_SHADER: &'static str = "#version 100
-precision lowp float;
-attribute vec3 position;
-attribute vec2 texcoord;
-varying vec2 uv;
-uniform mat4 Model;
-uniform mat4 Projection;
-void main() {
-    gl_Position = Projection * Model * vec4(position, 1);
-    uv = texcoord;
-}
-";
