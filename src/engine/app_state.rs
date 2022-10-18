@@ -5,6 +5,7 @@ use macroquad::ui::{
     widgets::{self, Label, TreeNode},
 };
 
+use crate::engine::audio::Audio;
 use crate::engine::built_in_uniforms::BuiltInUniforms;
 use crate::engine::color_picker::color_picker_texture;
 use crate::engine::mesh::MyMesh;
@@ -30,13 +31,15 @@ pub struct AppState {
     pub built_in_uniforms: BuiltInUniforms,
 
     pub skin: macroquad::ui::Skin,
+
+    pub audio: Audio,
 }
 
 impl AppState {
-    pub fn new(num_tracks: usize) -> Self {
+    pub fn new(tracks: Vec<Track>) -> Self {
         let mut m: MaterialParams = Default::default();
-        for i in 0..num_tracks {
-            m.textures.push(format!("iChannel{}", i).to_owned());
+        for i in 0..tracks.len() {
+            m.textures.push(tracks[i].output_name.clone());
             m.uniforms.push((
                 format!("iChannelResolution{}", i).to_owned(),
                 UniformType::Float3,
@@ -45,21 +48,26 @@ impl AppState {
                 .push((format!("iChannelTime{}", i).to_owned(), UniformType::Float1));
         }
 
-        m.uniforms.push(("iTime".to_owned(), UniformType::Float1));
-        m.uniforms
-            .push(("iTimeDelta".to_owned(), UniformType::Float1));
-        m.uniforms
-            .push(("iResolution".to_owned(), UniformType::Float3));
-        m.uniforms.push(("iFrame".to_owned(), UniformType::Float1));
+        let builtin = [
+            ("iTime".to_owned(), UniformType::Float1),
+            ("iTimeDelta".to_owned(), UniformType::Float1),
+            ("iFrame".to_owned(), UniformType::Float1),
+            ("iResolution".to_owned(), UniformType::Float3),
+        ];
 
-        let post_processing_material =
-            load_material(CRT_VERTEX_SHADER, CRT_FRAGMENT_SHADER, m).unwrap();
+        for b in builtin {
+            m.uniforms.push(b);
+        }
+
+        let vertex_shader = std::fs::read_to_string("assets/shaders/crt.vert").unwrap();
+        let fragment_shader = std::fs::read_to_string("assets/shaders/crt.frag").unwrap();
+        let post_processing_material = load_material(&vertex_shader, &fragment_shader, m).unwrap();
 
         let (color_picker_texture, color_picker_image) = color_picker_texture(200, 200);
 
         Self {
             selected_track: 0,
-            tracks: Vec::new(),
+            tracks,
             post_processing_material,
             error: None,
             colorpicker_window: false,
@@ -72,6 +80,7 @@ impl AppState {
 
             built_in_uniforms: BuiltInUniforms::new(),
             skin: root_ui().default_skin(),
+            audio: Audio::new(),
         }
     }
 }
@@ -82,188 +91,195 @@ pub fn render_gui(app_state: &mut AppState) {
     let track = &mut app_state.tracks[app_state.selected_track];
     let mut need_update = false;
 
-    widgets::Window::new(hash!(), vec2(20., 20.), vec2(800.0, 650.))
-        .label("Shader")
-        .ui(&mut *root_ui(), |ui| {
-            ui.push_skin(&app_state.skin);
-            ui.label(
-                None,
-                &format!("Selected track: {}", &app_state.selected_track),
-            );
-            ui.label(None, "Camera: ");
-            // ui.same_line(0.0);
-            if ui.button(None, "Ortho") {
-                track.camera.projection = Projection::Orthographics;
-            }
-            // ui.same_line(0.0);
-            if ui.button(None, "Perspective") {
-                track.camera.projection = Projection::Perspective;
-            }
-            ui.label(None, "Mesh: ");
-            // ui.same_line(0.0);
-            if ui.button(None, "Sphere") {
-                track.mesh = MyMesh::Sphere;
-            }
-            // ui.same_line(0.0);
-            if ui.button(None, "Cube") {
-                track.mesh = MyMesh::Cube;
-            }
-            // ui.same_line(0.0);
-            if ui.button(None, "Plane") {
-                track.mesh = MyMesh::Plane;
-            }
+    widgets::Window::new(
+        hash!(),
+        vec2(20., 20.),
+        vec2(screen_width() - 40., screen_height() - 40.),
+    )
+    .label("Shader")
+    .ui(&mut *root_ui(), |ui| {
+        ui.push_skin(&app_state.skin);
+        ui.label(
+            None,
+            &format!("Selected track: {}", &app_state.selected_track),
+        );
+        ui.label(None, "Camera: ");
+        ui.same_line(0.0);
+        if ui.button(None, "Ortho") {
+            track.camera.projection = Projection::Orthographics;
+        }
+        ui.same_line(0.0);
+        if ui.button(None, "Perspective") {
+            track.camera.projection = Projection::Perspective;
+        }
 
-            ui.label(None, "Uniforms:");
-            ui.separator();
+        ui.label(None, "Mesh: ");
+        ui.same_line(0.0);
+        if ui.button(None, "Sphere") {
+            track.mesh = MyMesh::Sphere;
+        }
+        ui.same_line(0.0);
+        if ui.button(None, "Cube") {
+            track.mesh = MyMesh::Cube;
+        }
+        ui.same_line(0.0);
+        if ui.button(None, "Plane") {
+            track.mesh = MyMesh::Plane;
+        }
 
-            for (i, (name, uniform)) in track.uniforms.iter_mut().enumerate() {
-                ui.label(None, &format!("{}", name));
-                ui.same_line(120.0);
+        ui.label(None, "Uniforms:");
 
-                match uniform {
-                    Uniform::Int(x) => {
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(200.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, x);
+        ui.separator();
 
-                        if let Ok(x) = x.parse::<f32>() {
-                            track.material.set_uniform(name, x);
-                        }
-                    }
-                    Uniform::Float1(x) => {
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(200.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, x);
+        for (i, (name, uniform)) in track.uniforms.iter_mut().enumerate() {
+            ui.label(None, &format!("{}", name));
+            ui.same_line(120.0);
 
-                        if let Ok(x) = x.parse::<f32>() {
-                            track.material.set_uniform(name, x);
-                        }
-                    }
-                    Uniform::Float2(x, y) => {
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(99.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, x);
+            match uniform {
+                Uniform::Int(x) => {
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(200.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, x);
 
-                        ui.same_line(0.0);
-
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(99.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, y);
-
-                        if let (Ok(x), Ok(y)) = (x.parse::<f32>(), y.parse::<f32>()) {
-                            track.material.set_uniform(name, (x, y));
-                        }
-                    }
-                    Uniform::Float3(x, y, z) => {
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, x);
-
-                        ui.same_line(0.0);
-
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, y);
-
-                        ui.same_line(0.0);
-
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, z);
-
-                        if let (Ok(x), Ok(y), Ok(z)) =
-                            (x.parse::<f32>(), y.parse::<f32>(), z.parse::<f32>())
-                        {
-                            track.material.set_uniform(name, (x, y, z));
-                        }
-                    }
-
-                    Uniform::Float4(x, y, z, w) => {
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, x);
-
-                        ui.same_line(0.0);
-
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, y);
-
-                        ui.same_line(0.0);
-
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, z);
-
-                        ui.same_line(0.0);
-
-                        widgets::InputText::new(hash!(hash!(), i))
-                            .size(vec2(65.0, 19.0))
-                            .filter_numbers()
-                            .ui(ui, w);
-
-                        if let (Ok(x), Ok(y), Ok(z), Ok(w)) = (
-                            x.parse::<f32>(),
-                            y.parse::<f32>(),
-                            z.parse::<f32>(),
-                            w.parse::<f32>(),
-                        ) {
-                            track.material.set_uniform(name, (x, y, z, w));
-                        }
-                    }
-
-                    Uniform::Color(color) => {
-                        let mut canvas = ui.canvas();
-
-                        let cursor = canvas.cursor();
-
-                        canvas.rect(
-                            Rect::new(cursor.x + 20.0, cursor.y, 50.0, 18.0),
-                            Color::new(0.2, 0.2, 0.2, 1.0),
-                            Color::new(color.x, color.y, color.z, 1.0),
-                        );
-
-                        if ui.button(None, "change") {
-                            app_state.colorpicker_window = true;
-                            app_state.color_picking_uniform = Some(name.to_owned());
-                        }
-                        track
-                            .material
-                            .set_uniform(name, (color.x, color.y, color.z));
+                    if let Ok(x) = x.parse::<f32>() {
+                        track.material.set_uniform(name, x);
                     }
                 }
+                Uniform::Float1(x) => {
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(200.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, x);
+
+                    if let Ok(x) = x.parse::<f32>() {
+                        track.material.set_uniform(name, x);
+                    }
+                }
+                Uniform::Float2(x, y) => {
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(99.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, x);
+
+                    ui.same_line(0.0);
+
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(99.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, y);
+
+                    if let (Ok(x), Ok(y)) = (x.parse::<f32>(), y.parse::<f32>()) {
+                        track.material.set_uniform(name, (x, y));
+                    }
+                }
+                Uniform::Float3(x, y, z) => {
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, x);
+
+                    ui.same_line(0.0);
+
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, y);
+
+                    ui.same_line(0.0);
+
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, z);
+
+                    if let (Ok(x), Ok(y), Ok(z)) =
+                        (x.parse::<f32>(), y.parse::<f32>(), z.parse::<f32>())
+                    {
+                        track.material.set_uniform(name, (x, y, z));
+                    }
+                }
+
+                Uniform::Float4(x, y, z, w) => {
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, x);
+
+                    ui.same_line(0.0);
+
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, y);
+
+                    ui.same_line(0.0);
+
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, z);
+
+                    ui.same_line(0.0);
+
+                    widgets::InputText::new(hash!(hash!(), i))
+                        .size(vec2(65.0, 19.0))
+                        .filter_numbers()
+                        .ui(ui, w);
+
+                    if let (Ok(x), Ok(y), Ok(z), Ok(w)) = (
+                        x.parse::<f32>(),
+                        y.parse::<f32>(),
+                        z.parse::<f32>(),
+                        w.parse::<f32>(),
+                    ) {
+                        track.material.set_uniform(name, (x, y, z, w));
+                    }
+                }
+
+                Uniform::Color(color) => {
+                    let mut canvas = ui.canvas();
+
+                    let cursor = canvas.cursor();
+
+                    canvas.rect(
+                        Rect::new(cursor.x + 20.0, cursor.y, 50.0, 18.0),
+                        Color::new(0.2, 0.2, 0.2, 1.0),
+                        Color::new(color.x, color.y, color.z, 1.0),
+                    );
+
+                    if ui.button(None, "change") {
+                        app_state.colorpicker_window = true;
+                        app_state.color_picking_uniform = Some(name.to_owned());
+                    }
+                    track
+                        .material
+                        .set_uniform(name, (color.x, color.y, color.z));
+                }
             }
-            ui.separator();
-            if ui.button(None, "New uniform") {
-                app_state.new_uniform_window = true;
-            }
-            TreeNode::new(hash!(), "Fragment shader")
-                .init_unfolded()
-                .ui(ui, |ui| {
-                    if ui.editbox(hash!(), vec2(440., 200.), &mut track.fragment_shader) {
-                        need_update = true;
-                    };
-                });
-            ui.tree_node(hash!(), "Vertex shader", |ui| {
-                if ui.editbox(hash!(), vec2(440., 300.), &mut track.vertex_shader) {
+        }
+        ui.separator();
+
+        if ui.button(None, "New uniform") {
+            app_state.new_uniform_window = true;
+        }
+        TreeNode::new(hash!(), "Fragment shader")
+            .init_unfolded()
+            .ui(ui, |ui| {
+                if ui.editbox(hash!(), vec2(440., 200.), &mut track.fragment_shader) {
                     need_update = true;
                 };
             });
-
-            if let Some(ref error) = app_state.error {
-                Label::new(error).multiline(14.0).ui(ui);
-            }
+        ui.tree_node(hash!(), "Vertex shader", |ui| {
+            if ui.editbox(hash!(), vec2(440., 300.), &mut track.vertex_shader) {
+                need_update = true;
+            };
         });
+
+        if let Some(ref error) = app_state.error {
+            Label::new(error).multiline(14.0).ui(ui);
+        }
+    });
 
     if app_state.new_uniform_window {
         widgets::Window::new(hash!(), vec2(100., 100.), vec2(200., 80.))
@@ -395,21 +411,13 @@ pub fn update_builtin_uniforms(app_state: &mut AppState) {
         .built_in_uniforms
         .update_date(year, month, day, second);
 
-    app_state
-        .post_processing_material
-        .set_uniform("iDate", &app_state.built_in_uniforms.i_date);
-    app_state
-        .post_processing_material
-        .set_uniform("iFrame", &app_state.built_in_uniforms.i_frame);
-    app_state
-        .post_processing_material
-        .set_uniform("iFrameRate", &app_state.built_in_uniforms.i_frame_rate);
-    app_state
-        .post_processing_material
-        .set_uniform("iMouse", &app_state.built_in_uniforms.i_mouse);
-    app_state
-        .post_processing_material
-        .set_uniform("iResolution", &app_state.built_in_uniforms.i_resolution);
+    let built_in = &app_state.built_in_uniforms;
+    let material = app_state.post_processing_material;
+    material.set_uniform("iDate", &built_in.i_date);
+    material.set_uniform("iFrame", &built_in.i_frame);
+    material.set_uniform("iFrameRate", &built_in.i_frame_rate);
+    material.set_uniform("iMouse", &built_in.i_mouse);
+    material.set_uniform("iResolution", &built_in.i_resolution);
 }
 
 pub fn render_post_process(app_state: &mut AppState) {
@@ -417,12 +425,12 @@ pub fn render_post_process(app_state: &mut AppState) {
     set_default_camera();
     clear_background(WHITE);
 
-    app_state
-        .post_processing_material
-        .set_texture("iChannel0", app_state.tracks[0].render_target.texture);
-    app_state
-        .post_processing_material
-        .set_texture("iChannel1", app_state.tracks[1].render_target.texture);
+    for track in 0..app_state.tracks.len() {
+        app_state.post_processing_material.set_texture(
+            &app_state.tracks[track].output_name,
+            app_state.tracks[track].render_target.texture,
+        );
+    }
 
     let texture = app_state.tracks[app_state.selected_track]
         .render_target
@@ -432,7 +440,7 @@ pub fn render_post_process(app_state: &mut AppState) {
         texture,
         0.,
         0.,
-        Color::new(1.0, 1.0, 1.0, 1.0), // WHITE
+        WHITE,
         DrawTextureParams {
             dest_size: Some(vec2(screen_width(), screen_height())),
             ..Default::default()
@@ -440,77 +448,3 @@ pub fn render_post_process(app_state: &mut AppState) {
     );
     gl_use_default_material();
 }
-
-const CRT_FRAGMENT_SHADER: &'static str = r#"#version 100
-precision lowp float;
-varying vec4 color;
-varying vec2 uv;
-
-
-uniform float iTime;
-
-uniform sampler2D Texture;
-
-uniform sampler2D iChannel0;
-uniform sampler2D iChannel1;
-
-uniform vec3 iResolution;
-
-// https://www.shadertoy.com/view/XtlSD7
-vec2 CRTCurveUV(vec2 uv)
-{
-    uv = uv * 2.0 - 1.0;
-    vec2 offset = abs( uv.yx ) / vec2( 6.0, 4.0 );
-    uv = uv + uv * offset * offset;
-    uv = uv * 0.5 + 0.5;
-    return uv;
-}
-void DrawVignette( inout vec3 color, vec2 uv )
-{    
-    float vignette = uv.x * uv.y * ( 1.0 - uv.x ) * ( 1.0 - uv.y );
-    vignette = clamp( pow( 16.0 * vignette, 0.3 ), 0.0, 1.0 );
-    color *= vignette;
-}
-void DrawScanline( inout vec3 color, vec2 uv )
-{
-    // float iTime = 0.1;
-    float scanline 	= clamp( 0.95 + 0.05 * cos( 3.14 * ( uv.y + 0.008 * iTime ) * 240.0 * 1.0 ), 0.0, 1.0 );
-    float grille 	= 0.85 + 0.15 * clamp( 1.5 * cos( 3.14 * uv.x * 640.0 * 1.0 ), 0.0, 1.0 );    
-    color *= scanline * grille * 1.2;
-}
-void main() {
-    
-    vec2 crtUV = CRTCurveUV(uv);
-    
-    // vec3 res = texture2D(Texture, uv).rgb * color.rgb;
-    vec2 mehuv = vec2(1.0-crtUV.x, 1.0-crtUV.y);
-    vec3 channel0 = texture2D(iChannel0, mehuv).rgb;
-    vec3 channel1 = texture2D(iChannel1, mehuv).rgb;
-    vec3 res = mix(channel0, channel1, sin(iTime) * 0.5 + 0.5);
- 	
-    if (crtUV.x < 0.0 || crtUV.x > 1.0 || crtUV.y < 0.0 || crtUV.y > 1.0)
-    {
-        res = vec3(0.0, 0.0, 0.0);
-    } 
-    DrawVignette(res, crtUV);
-    DrawScanline(res, uv);
-
-
-    gl_FragColor = vec4(res, 1.0);
-}
-"#;
-
-const CRT_VERTEX_SHADER: &'static str = "#version 100
-attribute vec3 position;
-attribute vec2 texcoord;
-attribute vec4 color0;
-varying lowp vec2 uv;
-varying lowp vec4 color;
-uniform mat4 Model;
-uniform mat4 Projection;
-void main() {
-    gl_Position = Projection * Model * vec4(position, 1);
-    color = color0 / 255.0;
-    uv = texcoord;
-}
-";
