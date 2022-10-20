@@ -1,39 +1,55 @@
 use super::commands::*;
 
+// Value
 fn v(value: &str) -> CodeNode {
     (CommandType::Value, value.to_owned())
 }
 
+// Return
 fn r() -> CodeNode {
     (CommandType::Return, "".to_owned())
 }
 
+// Set variable
 fn sv(value: &str) -> CodeNode {
     (CommandType::SetVariable, value.to_owned())
 }
+
+// Preprocessor
 fn pp(command: &str, value: &str) -> CodeNode {
     (CommandType::PreProcessor, format!("{} {}", command, value))
 }
+
+// Parenthesis
 fn ps() -> CodeNode {
     (CommandType::Parenthesis, "".to_owned())
 }
 
+// Begin if
 fn bi() -> CodeNode {
     (CommandType::BeginIf, "".to_owned())
 }
 
+// End if
 fn ei() -> CodeNode {
     (CommandType::EndIf, "".to_owned())
 }
 
+// CallFunction
 fn cf(value: &str) -> CodeNode {
     (CommandType::CallFunction, value.to_owned())
 }
+
+// Precision
 fn pc(value: &str, return_type: &str) -> CodeNode {
     (
         CommandType::Value,
         format!("precision {} {}", value, return_type),
     )
+}
+
+fn dv(value: &str) -> CodeNode {
+    (CommandType::DeclareVariable, "".to_owned())
 }
 
 fn c(p: &mut TreeProgram, parent: usize, func: CodeNode, args: &[CodeNode]) {
@@ -43,10 +59,14 @@ fn c(p: &mut TreeProgram, parent: usize, func: CodeNode, args: &[CodeNode]) {
     }
 }
 
+// Add child
+/*
 fn ac(p: &mut TreeProgram, func: CodeNode, parent: usize) -> usize {
     p.tree.add_child(func, parent)
 }
+*/
 
+// Attribute
 fn atrib(return_type: &str, value: &str) -> CodeNode {
     (
         CommandType::Value,
@@ -54,6 +74,7 @@ fn atrib(return_type: &str, value: &str) -> CodeNode {
     )
 }
 
+// Varying
 fn vary(return_type: &str, value: &str) -> CodeNode {
     (
         CommandType::Value,
@@ -122,7 +143,6 @@ pub fn test_program() {
     println!(":: Default Vertex ::");
     println!("::::::::::::::::::::");
     let mut p = create_default_vertex_shader();
-
     p.print();
 
     println!("");
@@ -256,24 +276,24 @@ pub fn create_crt_fragment_shader() -> TreeProgram {
     let cos_call = p.ac(cf("cos"), multiply);
     let multiply = p.ac(m(), cos_call);
     p.ac(v("3.14"), multiply);
-    let more = ac(&mut p, ps(), multiply);
+    let more = p.ac(ps(), multiply);
     p.ac(v("240.0"), multiply);
     p.ac(v("10.0"), multiply);
 
-    let add = ac(&mut p, a(), more);
+    let add = p.ac(a(), more);
     p.ac(v("uv.y"), add);
-    let multiply = ac(&mut p, m(), add);
+    let multiply = p.ac(m(), add);
     p.ac(v("0.008"), multiply);
     p.ac(v("iTime"), multiply);
 
-    let set_grille = ac(&mut p, sv("float grille"), root);
-    let add = ac(&mut p, a(), set_grille);
+    let set_grille = p.ac(sv("float grille"), root);
+    let add = p.ac(a(), set_grille);
     p.ac(v("0.85"), add);
-    let multiply = ac(&mut p, m(), add);
+    let multiply = p.ac(m(), add);
     p.ac(v("1.5"), multiply);
-    let clamp_call = ac(&mut p, cf("clamp"), multiply);
-    let cos_call = ac(&mut p, cf("cos"), clamp_call);
-    let multiply = ac(&mut p, m(), cos_call);
+    let clamp_call = p.ac(cf("clamp"), multiply);
+    let cos_call = p.ac(cf("cos"), clamp_call);
+    let multiply = p.ac(m(), cos_call);
     p.ac(v("3.14"), multiply);
     p.ac(v("uv.x"), multiply);
     p.ac(v("640.0"), multiply);
@@ -282,8 +302,8 @@ pub fn create_crt_fragment_shader() -> TreeProgram {
     p.ac(v("0.0"), clamp_call);
     p.ac(v("1.0"), clamp_call);
 
-    let set_color = ac(&mut p, sv("color"), root);
-    let multiply = ac(&mut p, m(), set_color);
+    let set_color = p.ac(sv("color"), root);
+    let multiply = p.ac(m(), set_color);
     p.ac(v("color"), multiply);
     p.ac(v("scanline"), multiply);
     p.ac(v("graille"), multiply);
