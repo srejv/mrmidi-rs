@@ -37,17 +37,11 @@ fn render_command(
     ui.label(None, &name);
 
     match program.tree.arena[node_idx].val.0 {
-        crate::code::commands::CommandType::Multiply => {
-        }
-        crate::code::commands::CommandType::Add => {
-        }
-        crate::code::commands::CommandType::Divide => {
-        }
-        crate::code::commands::CommandType::Subtract => {
-            
-        }
-        crate::code::commands::CommandType::SetVariable => {
-        }
+        crate::code::commands::CommandType::Multiply => {}
+        crate::code::commands::CommandType::Add => {}
+        crate::code::commands::CommandType::Divide => {}
+        crate::code::commands::CommandType::Subtract => {}
+        crate::code::commands::CommandType::SetVariable => {}
 
         _ => {}
     }
@@ -77,7 +71,7 @@ async fn main() {
             if program.tree.arena[selectedNode].children.len() == 0 {
             } else if selected_row < program.tree.arena[selectedNode].children.len() - 1 {
                 selected_row += 1;
-            }   
+            }
         }
 
         if is_key_pressed(KeyCode::Left) {
@@ -88,7 +82,6 @@ async fn main() {
         }
         if is_key_pressed(KeyCode::Right) {
             if program.tree.arena[selectedNode].children.len() == 0 {
-                
             } else if selected_row < program.tree.arena[selectedNode].children.len() - 1 {
                 selectedNode = program.tree.arena[selectedNode].children[selected_row];
                 selected_row = 0;
@@ -119,7 +112,7 @@ async fn main() {
                 let selected = if i == selected_row { "->" } else { "" };
                 let label = format!("{}. {}{}: {}", i + 1, selected, command_name, name);
                 ui.label(None, &label);
-                i+=1;
+                i += 1;
             }
         });
 

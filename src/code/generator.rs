@@ -1,7 +1,5 @@
 use super::commands::*;
 
-
-
 fn v(value: &str) -> CodeNode {
     (CommandType::Value, value.to_owned())
 }
@@ -123,115 +121,20 @@ pub fn test_program() {
     println!("");
     println!(":: Default Vertex ::");
     println!("::::::::::::::::::::");
-    let p = create_default_vertex_shader();
-    let mut p = TreeProgram::new();
-    let root = p.tree.node(pp("Rootnode", "Don't print."));
-
-    p.tree.add_child(pp("version", "100"), root);
-
-    p.tree.add_child(pc("lowp", "float"), root);
-
-    p.tree.add_child(atrib("vec3", "position"), root);
-    p.tree.add_child(atrib("vec2", "texcoord"), root);
-
-    // // macroquad uniforms
-    p.tree.add_child(vary("vec2", "uv"), root);
-
-    p.tree.add_child(uni("sampler2D", "Texture"), root);
-    p.tree.add_child(uni("mat4", "Model"), root);
-    p.tree.add_child(uni("mat4", "Projection"), root);
-
-    // mrmidi
-    p.tree.add_child(uni("float", "iTime"), root);
-    p.tree.add_child(uni("float", "iTimeDelta"), root);
-    p.tree.add_child(uni("int", "iFrame"), root);
-
-    let main = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), main);
-    p.tree.add_child(v("main"), main);
-
-    let set_position = p.tree.add_child(sv("gl_Position"), root);
-    let multiply = p.tree.add_child(m(), set_position);
-    p.tree.add_child(v("Projection"), multiply);
-    p.tree.add_child(v("Model"), multiply);
-    let call_conversion = p.tree.add_child(cf("vec4"), multiply);
-    p.tree.add_child(v("position"), call_conversion);
-    p.tree.add_child(v("1"), call_conversion);
-
-    p.tree.add_child(ef(), root);
+    let mut p = create_default_vertex_shader();
 
     p.print();
 
     println!("");
     println!(":: Default Fragment ::");
     println!("::::::::::::::::::::::");
-    let mut p = TreeProgram::new();
-    let root = p.tree.node(pp("root", "don't print me"));
-    p.tree.add_child(pp("version", "100"), root);
-    p.tree.add_child(pc("lowp", "float"), root);
-
-    // macroquad uniforms
-    p.tree.add_child(vary("vec2", "uv"), root);
-    p.tree.add_child(uni("sampler2D", "Texture"), root);
-
-    // mrmidi
-    p.tree.add_child(uni("float", "iTime"), root);
-    p.tree.add_child(uni("float", "iTimeDelta"), root);
-    p.tree.add_child(uni("int", "iFrame"), root);
-
-    let main = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), main);
-    p.tree.add_child(v("main"), main);
-
-    let set_color = p.tree.add_child(sv("gl_FragCoord"), root);
-    let call_sample_texture = p.tree.add_child(cf("texture2D"), set_color);
-    p.tree.add_child(v("Texture"), call_sample_texture);
-    p.tree.add_child(v("uv"), call_sample_texture);
-
-    p.tree.add_child(ef(), root);
-
+    let mut p = create_default_fragment_shader();
     p.print();
 
     println!("");
     println!(":: CRT Vertex ::");
     println!("::::::::::::::::::::");
-    let mut p = TreeProgram::new();
-    let root = p.tree.node(pp("root", "don't print this"));
-    p.tree.add_child(pp("version", "100"), root);
-    p.tree.add_child(pc("lowp", "float"), root);
-
-    p.tree.add_child(atrib("vec3", "position"), root);
-    p.tree.add_child(atrib("vec2", "texcoord"), root);
-    p.tree.add_child(atrib("vec4", "color0"), root);
-
-    // macroquad uniforms
-    p.tree.add_child(vary("vec2", "uv"), root);
-    p.tree.add_child(vary("vec4", "color"), root);
-
-    p.tree.add_child(uni("mat4", "Model"), root);
-    p.tree.add_child(uni("mat4", "Projection"), root);
-
-    let main = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), main);
-    p.tree.add_child(v("main"), main);
-
-    let set_position = p.tree.add_child(sv("gl_Position"), root);
-    let multiply = p.tree.add_child(m(), set_position);
-    p.tree.add_child(v("Projection"), multiply);
-    p.tree.add_child(v("Model"), multiply);
-    let position_func = p.tree.add_child(cf("vec4"), multiply);
-    p.tree.add_child(v("position"), position_func);
-    p.tree.add_child(v("1"), position_func);
-
-    let set_color = p.tree.add_child(sv("color"), root);
-    let divide = p.tree.add_child(d(), set_color);
-    p.tree.add_child(v("color0"), divide);
-    p.tree.add_child(v("255.0"), divide);
-
-    let set_uv = p.tree.add_child(sv("uv"), root);
-    p.tree.add_child(v("textcoord"), set_uv);
-
-    p.tree.add_child(ef(), root);
+    let mut p = create_crt_vertex_shader();
     p.print();
 
     println!("");
@@ -426,7 +329,6 @@ pub fn create_crt_fragment_shader() -> TreeProgram {
     p.ac(v("0.5"), add);
     p.ac(v("0.5"), add);
 
-
     let if_call = p.ac(bi(), root);
     let or_check = p.ac(o(), if_call);
     let less_check = p.ac(lt(), or_check);
@@ -456,7 +358,6 @@ pub fn create_crt_fragment_shader() -> TreeProgram {
 
     p.ac(ei(), root);
 
-
     let draw_vignette_call = p.ac(cf("DrawVignette"), root);
     p.ac(v("res"), draw_vignette_call);
     p.ac(v("crtUV"), draw_vignette_call);
@@ -474,482 +375,110 @@ pub fn create_crt_fragment_shader() -> TreeProgram {
     p
 }
 
-pub fn test_program_old() {
-    println!("");
-    println!(":: First test ::");
-    let mut p = Program::new();
-    p.commands.push(set_variable(
-        "gl_FragCoord",
-        call4("vec4", val("1.0"), val("1.0"), val("0.0"), val("1.0")),
-    ));
-    crate::code::commands::print_program(&p);
-
-    println!("");
-    println!(":: Default Fragment ::");
-    println!("::::::::::::::::::::::");
-    let p = create_default_fragment_shader();
-    crate::code::commands::print_program(&p);
-
-    println!("");
-    println!(":: Default Vertex ::");
-    println!("::::::::::::::::::::");
-    let p = create_default_vertex_shader();
-    crate::code::commands::print_program(&p);
-
-    println!("");
-    println!(":: CRT Vertex ::");
-    println!("::::::::::::::::::::");
-    let p = create_crt_vertex_shader();
-    crate::code::commands::print_program(&p);
-
-    println!("");
-    println!(":: CRT Fragment ::");
-    println!("::::::::::::::::::::");
-    let p = create_crt_fragment_shader_old();
-    crate::code::commands::print_program(&p);
-}
-
-pub fn create_default_fragment_shader() -> Program {
-    let mut p = Program::new();
-    p.commands.push(declare_pre_processor("version", "100"));
-    p.commands.push(declare_precision("lowp", "float"));
+pub fn create_default_fragment_shader() -> TreeProgram {
+    let mut p = TreeProgram::new();
+    let root = p.tree.node(pp("root", "don't print me"));
+    p.tree.add_child(pp("version", "100"), root);
+    p.tree.add_child(pc("lowp", "float"), root);
 
     // macroquad uniforms
-    p.commands.push(declare_varying("vec2", "uv"));
-    p.commands.push(declare_uniform("sampler2D", "Texture"));
+    p.tree.add_child(vary("vec2", "uv"), root);
+    p.tree.add_child(uni("sampler2D", "Texture"), root);
 
     // mrmidi
-    p.commands.push(declare_uniform("float", "iTime"));
-    p.commands.push(declare_uniform("float", "iTimeDelta"));
-    p.commands.push(declare_uniform("int", "iFrame"));
+    p.tree.add_child(uni("float", "iTime"), root);
+    p.tree.add_child(uni("float", "iTimeDelta"), root);
+    p.tree.add_child(uni("int", "iFrame"), root);
 
-    p.commands.push(begin_func("void", "main"));
-    p.commands.push(set_variable(
-        "gl_FragCoord",
-        call2("texture2D", var("Texture"), var("uv")),
-    ));
-    p.commands.push(end_func());
+    let main = p.tree.add_child(bf(), root);
+    p.tree.add_child(v("void"), main);
+    p.tree.add_child(v("main"), main);
+
+    let set_color = p.tree.add_child(sv("gl_FragCoord"), root);
+    let call_sample_texture = p.tree.add_child(cf("texture2D"), set_color);
+    p.tree.add_child(v("Texture"), call_sample_texture);
+    p.tree.add_child(v("uv"), call_sample_texture);
+
+    p.tree.add_child(ef(), root);
     p
 }
 
-pub fn create_default_vertex_shader() -> Program {
-    let mut p = Program::new();
-    p.commands.push(declare_pre_processor("version", "100"));
-    p.commands.push(declare_precision("lowp", "float"));
+pub fn create_default_vertex_shader() -> TreeProgram {
+    let mut p = TreeProgram::new();
+    let root = p.tree.node(pp("Rootnode", "Don't print."));
 
-    p.commands.push(declare_attribute("vec3", "position"));
-    p.commands.push(declare_attribute("vec2", "texcoord"));
+    p.tree.add_child(pp("version", "100"), root);
 
-    // macroquad uniforms
-    p.commands.push(declare_varying("vec2", "uv"));
+    p.tree.add_child(pc("lowp", "float"), root);
 
-    p.commands.push(declare_uniform("sampler2D", "Texture"));
-    p.commands.push(declare_uniform("mat4", "Model"));
-    p.commands.push(declare_uniform("mat4", "Projection"));
+    p.tree.add_child(atrib("vec3", "position"), root);
+    p.tree.add_child(atrib("vec2", "texcoord"), root);
+
+    // // macroquad uniforms
+    p.tree.add_child(vary("vec2", "uv"), root);
+
+    p.tree.add_child(uni("sampler2D", "Texture"), root);
+    p.tree.add_child(uni("mat4", "Model"), root);
+    p.tree.add_child(uni("mat4", "Projection"), root);
 
     // mrmidi
-    p.commands.push(declare_uniform("float", "iTime"));
-    p.commands.push(declare_uniform("float", "iTimeDelta"));
-    p.commands.push(declare_uniform("int", "iFrame"));
+    p.tree.add_child(uni("float", "iTime"), root);
+    p.tree.add_child(uni("float", "iTimeDelta"), root);
+    p.tree.add_child(uni("int", "iFrame"), root);
 
-    p.commands.push(begin_func("void", "main"));
-    p.commands.push(set_variable(
-        "gl_Position",
-        mult(
-            var("Projection"),
-            mult(var("Model"), var("vec4(position, 1)")),
-        ),
-    ));
+    let main = p.tree.add_child(bf(), root);
+    p.tree.add_child(v("void"), main);
+    p.tree.add_child(v("main"), main);
 
-    p.commands.push(Command::EndFunction());
+    let set_position = p.tree.add_child(sv("gl_Position"), root);
+    let multiply = p.tree.add_child(m(), set_position);
+    p.tree.add_child(v("Projection"), multiply);
+    p.tree.add_child(v("Model"), multiply);
+    let call_conversion = p.tree.add_child(cf("vec4"), multiply);
+    p.tree.add_child(v("position"), call_conversion);
+    p.tree.add_child(v("1"), call_conversion);
+
+    p.tree.add_child(ef(), root);
     p
 }
 
-pub fn create_crt_vertex_shader() -> Program {
-    let mut p = Program::new();
-    p.commands.push(declare_pre_processor("version", "100"));
-    p.commands.push(declare_precision("lowp", "float"));
+pub fn create_crt_vertex_shader() -> TreeProgram {
+    let mut p = TreeProgram::new();
+    let root = p.tree.node(pp("root", "don't print this");
+    p.tree.add_child(pp("version", "100"), root);
+    p.tree.add_child(pc("lowp", "float"), root);
 
-    p.commands.push(declare_attribute("vec3", "position"));
-    p.commands.push(declare_attribute("vec2", "texcoord"));
-    p.commands.push(declare_attribute("vec4", "color0"));
+    p.tree.add_child(atrib("vec3", "position"), root);
+    p.tree.add_child(atrib("vec2", "texcoord"), root);
+    p.tree.add_child(atrib("vec4", "color0"), root);
 
     // macroquad uniforms
-    p.commands.push(declare_varying("vec2", "uv"));
-    p.commands.push(declare_varying("vec4", "color"));
+    p.tree.add_child(vary("vec2", "uv"), root);
+    p.tree.add_child(vary("vec4", "color"), root);
 
-    p.commands.push(declare_uniform("mat4", "Model"));
-    p.commands.push(declare_uniform("mat4", "Projection"));
+    p.tree.add_child(uni("mat4", "Model"), root);
+    p.tree.add_child(uni("mat4", "Projection"), root);
 
-    p.commands.push(begin_func("void", "main"));
+    let main = p.tree.add_child(bf(), root);
+    p.tree.add_child(v("void"), main);
+    p.tree.add_child(v("main"), main);
 
-    p.commands.push(set_variable(
-        "gl_Position",
-        mult(
-            var("Projection"),
-            mult(var("Model"), var("vec4(position, 1)")),
-        ),
-    ));
-    p.commands
-        .push(set_variable("color", div(var("color0"), val("255.0"))));
-    p.commands.push(set_variable("uv", var("texcoord")));
+    let set_position = p.tree.add_child(sv("gl_Position"), root);
+    let multiply = p.tree.add_child(m(), set_position);
+    p.tree.add_child(v("Projection"), multiply);
+    p.tree.add_child(v("Model"), multiply);
+    let position_func = p.tree.add_child(cf("vec4"), multiply);
+    p.tree.add_child(v("position"), position_func);
+    p.tree.add_child(v("1"), position_func);
 
-    p.commands.push(end_func());
-    p
-}
+    let set_color = p.tree.add_child(sv("color"), root);
+    let divide = p.tree.add_child(d(), set_color);
+    p.tree.add_child(v("color0"), divide);
+    p.tree.add_child(v("255.0"), divide);
 
-fn declare_pre_processor(command: &str, value: &str) -> Command {
-    Command::PreProcessor(format!("{} {}", command, value))
-}
+    let set_uv = p.tree.add_child(sv("uv"), root);
+    p.tree.add_child(v("textcoord"), set_uv);
 
-fn declare_uniform(return_type: &str, name: &str) -> Command {
-    Command::Value(format!("uniform {} {}", return_type, name))
-}
-
-fn declare_varying(return_type: &str, name: &str) -> Command {
-    Command::Value(format!("varying {} {}", return_type, name))
-}
-
-fn declare_precision(value: &str, return_type: &str) -> Command {
-    Command::Value(format!("precision {} {}", value, return_type))
-}
-
-fn declare_attribute(value: &str, return_type: &str) -> Command {
-    Command::Value(format!("attribute {} {}", value, return_type))
-}
-
-fn set_variable(name: &str, command: Command) -> Command {
-    Command::SetVariable(name.to_owned(), Box::new(command))
-}
-
-fn var(name: &str) -> Command {
-    Command::ReadVariable(name.to_owned())
-}
-
-fn val(name: &str) -> Command {
-    Command::Value(name.to_owned())
-}
-
-fn mult(left: Command, right: Command) -> Command {
-    Command::Multiply(Box::new(left), Box::new(right))
-}
-
-fn add(left: Command, right: Command) -> Command {
-    Command::Add(Box::new(left), Box::new(right))
-}
-
-fn div(left: Command, right: Command) -> Command {
-    Command::Divide(Box::new(left), Box::new(right))
-}
-
-fn sub(left: Command, right: Command) -> Command {
-    Command::Subtract(Box::new(left), Box::new(right))
-}
-
-fn ret(name: &str) -> Command {
-    Command::Return(name.to_owned())
-}
-
-fn parens(value: Command) -> Command {
-    Command::Parenthesis(Box::new(value))
-}
-
-fn begin_func(return_type: &str, name: &str) -> Command {
-    Command::BeginFunction(return_type.to_owned(), name.to_owned())
-}
-
-fn begin_func1(return_type: &str, name: &str, arg0: &str) -> Command {
-    Command::BeginFunction1(return_type.to_owned(), name.to_owned(), arg0.to_owned())
-}
-
-fn begin_func2(return_type: &str, name: &str, arg0: &str, arg1: &str) -> Command {
-    Command::BeginFunction2(
-        return_type.to_owned(),
-        name.to_owned(),
-        arg0.to_owned(),
-        arg1.to_owned(),
-    )
-}
-
-fn begin_if(check: Command) -> Command {
-    Command::BeginIf(Box::new(check))
-}
-
-fn less_than(left: Command, right: Command) -> Command {
-    Command::LessThan(Box::new(left), Box::new(right))
-}
-
-fn more_than(left: Command, right: Command) -> Command {
-    Command::MoreThan(Box::new(left), Box::new(right))
-}
-
-fn or(left: Command, right: Command) -> Command {
-    Command::Or(Box::new(left), Box::new(right))
-}
-
-fn and(left: Command, right: Command) -> Command {
-    Command::And(Box::new(left), Box::new(right))
-}
-
-fn equals(left: Command, right: Command) -> Command {
-    Command::Equals(Box::new(left), Box::new(right))
-}
-
-fn end_func() -> Command {
-    Command::EndFunction()
-}
-
-fn end_if() -> Command {
-    Command::EndFunction()
-}
-
-fn call1(name: &str, arg0: Command) -> Command {
-    Command::CallFunction1(name.to_owned(), to_string(&arg0).to_owned())
-}
-
-fn call2(name: &str, arg0: Command, arg1: Command) -> Command {
-    Command::CallFunction2(
-        name.to_owned(),
-        to_string(&arg0).to_owned(),
-        to_string(&arg1).to_owned(),
-    )
-}
-
-fn call3(name: &str, arg0: Command, arg1: Command, arg2: Command) -> Command {
-    Command::CallFunction3(
-        name.to_owned(),
-        to_string(&arg0).to_owned(),
-        to_string(&arg1).to_owned(),
-        to_string(&arg2).to_owned(),
-    )
-}
-
-fn call4(name: &str, arg0: Command, arg1: Command, arg2: Command, arg3: Command) -> Command {
-    Command::CallFunction4(
-        name.to_owned(),
-        to_string(&arg0).to_owned(),
-        to_string(&arg1).to_owned(),
-        to_string(&arg2).to_owned(),
-        to_string(&arg3).to_owned(),
-    )
-}
-
-fn program_header(commands: &mut Vec<Command>) {
-    commands.push(declare_pre_processor("version", "100"));
-    commands.push(declare_precision("lowp", "float"));
-
-    commands.push(declare_varying("vec4", "color"));
-    commands.push(declare_varying("vec2", "uv"));
-
-    commands.push(declare_uniform("float", "iTime"));
-
-    commands.push(declare_uniform("sampler2D", "Texture"));
-
-    commands.push(declare_uniform("sampler2D", "iChannel0"));
-    commands.push(declare_uniform("sampler2D", "iChannel1"));
-
-    commands.push(declare_uniform("vec3", "iResolution"));
-}
-
-fn add_function_crt_curve_uv(commands: &mut Vec<Command>) {
-    commands.push(begin_func1("vec2", "CRTCurveUV", "vec2 uv"));
-
-    commands.push(set_variable(
-        "uv",
-        mult(var("uv"), sub(val("2.0"), val("1.0"))),
-    ));
-
-    commands.push(set_variable(
-        "vec2 offset",
-        div(var("abs(uv.yx)"), val("vec2(6.0,4.0)")),
-    ));
-
-    commands.push(set_variable(
-        "uv",
-        add(
-            var("uv"),
-            mult(var("uv"), mult(var("offset"), var("offset"))),
-        ),
-    ));
-
-    commands.push(set_variable(
-        "uv",
-        mult(var("uv"), add(val("0.5"), val("0.5"))),
-    ));
-
-    commands.push(ret("uv"));
-
-    commands.push(end_func());
-}
-
-fn add_function_draw_vignette(commands: &mut Vec<Command>) {
-    commands.push(begin_func2(
-        "void",
-        "DrawVignette",
-        "inout vec3 color",
-        "vec2 uv",
-    ));
-    commands.push(set_variable(
-        "float vignette",
-        mult(
-            var("uv.x"),
-            mult(
-                var("uv.y"),
-                mult(
-                    parens(sub(val("1.0"), var("uv.x"))),
-                    parens(sub(val("1.0"), var("uv.y"))),
-                ),
-            ),
-        ),
-    ));
-    commands.push(set_variable(
-        "vignette",
-        call3(
-            "clamp",
-            call2("pow", mult(val("16.0"), var("vignette")), val("0.3")),
-            val("0.0"),
-            val("1.0"),
-        ),
-    ));
-
-    commands.push(set_variable("color", mult(var("color"), var("vignette"))));
-    commands.push(end_func());
-}
-
-fn add_function_scanline(commands: &mut Vec<Command>) {
-    commands.push(begin_func2(
-        "void",
-        "DrawScanline",
-        "inout vec3 color",
-        "vec2 uv",
-    ));
-
-    commands.push(set_variable(
-        "float scanline",
-        call3(
-            "clamp",
-            add(
-                val("0.95"),
-                mult(
-                    val("0.5"),
-                    call1(
-                        "cos",
-                        mult(
-                            val("3.14"),
-                            mult(
-                                parens(add(var("uv.y"), mult(val("0.008"), var("iTime")))),
-                                mult(val("240.0"), val("1.0")),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-            val("0.0"),
-            val("1.0"),
-        ),
-    ));
-
-    commands.push(set_variable(
-        "float grille",
-        add(
-            val("0.85"),
-            mult(
-                val("0.15"),
-                call3(
-                    "clamp",
-                    mult(
-                        val("1.5"),
-                        call1(
-                            "cos",
-                            mult(
-                                val("3.14"),
-                                mult(var("uv.x"), mult(val("640.0"), val("1.0"))),
-                            ),
-                        ),
-                    ),
-                    val("0.0"),
-                    val("1.0"),
-                ),
-            ),
-        ),
-    ));
-
-    commands.push(set_variable(
-        "color",
-        mult(
-            var("color"),
-            mult(var("scanline"), mult(var("graille"), val("1.2"))),
-        ),
-    ));
-
-    commands.push(end_func());
-}
-
-pub fn create_crt_fragment_shader_old() -> Program {
-    let mut p = Program::new();
-
-    program_header(&mut p.commands);
-
-    add_function_crt_curve_uv(&mut p.commands);
-    add_function_draw_vignette(&mut p.commands);
-    add_function_scanline(&mut p.commands);
-
-    // Main
-    p.commands.push(begin_func("void", "main"));
-
-    p.commands
-        .push(set_variable("vec2 crtUV", call1("CRTCurveUV", var("uv"))));
-
-    p.commands.push(set_variable(
-        "vec2 mehuv",
-        call2(
-            "vec2",
-            sub(val("1.0"), var("crtUV.x")),
-            sub(val("1.0"), var("crtUV.y")),
-        ),
-    ));
-
-    p.commands.push(set_variable(
-        "vec3 channel0",
-        call2("texture2D", var("iChannel0"), var("mehuv")),
-    ));
-    p.commands.push(set_variable(
-        "vec3 channel1",
-        call2("texture2D", var("iChannel1"), var("mehuv")),
-    ));
-    p.commands.push(set_variable(
-        "vec3 res",
-        call3(
-            "mix",
-            var("iChannel0"),
-            var("iChannel1"),
-            mult(call1("sin", var("iTime")), add(val("0.5"), val("0.5"))),
-        ),
-    ));
-
-    p.commands.push(begin_if(or(
-        less_than(var("crtUV.x"), val("0.0")),
-        or(
-            more_than(var("crtUV.x"), val("1.0")),
-            or(
-                less_than(var("crtUV.y"), val("0.0")),
-                more_than(var("crtUV.x"), val("1.0")),
-            ),
-        ),
-    )));
-    p.commands.push(set_variable(
-        "res",
-        call3("vec3", val("0.0"), val("0.0"), val("0.0")),
-    ));
-    p.commands.push(end_if());
-
-    p.commands
-        .push(call2("DrawVignette", var("res"), var("crtUV")));
-    p.commands
-        .push(call2("DrawScanline", var("res"), var("uv")));
-
-    p.commands
-        .push(set_variable("gl_FragColor", val("vec4(res, 1.0)")));
-    p.commands.push(end_func());
+    p.tree.add_child(ef(), root);
     p
 }
