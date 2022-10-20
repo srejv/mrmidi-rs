@@ -147,135 +147,135 @@ pub fn test_program() {
 pub fn create_crt_fragment_shader() -> TreeProgram {
     let mut p = TreeProgram::new();
     let root = p.tree.node(pp("root", "don't print this"));
-    p.tree.add_child(pp("version", "100"), root);
-    p.tree.add_child(pc("lowp", "float"), root);
+    p.ac(pp("version", "100"), root);
+    p.ac(pc("lowp", "float"), root);
 
-    p.tree.add_child(vary("vec4", "color"), root);
-    p.tree.add_child(vary("vec2", "uv"), root);
+    p.ac(vary("vec4", "color"), root);
+    p.ac(vary("vec2", "uv"), root);
 
-    p.tree.add_child(uni("float", "iTime"), root);
+    p.ac(uni("float", "iTime"), root);
 
-    p.tree.add_child(uni("sampler2D", "Texture"), root);
+    p.ac(uni("sampler2D", "Texture"), root);
 
-    p.tree.add_child(uni("sampler2D", "iChannel0"), root);
-    p.tree.add_child(uni("sampler2D", "iChannel1"), root);
+    p.ac(uni("sampler2D", "iChannel0"), root);
+    p.ac(uni("sampler2D", "iChannel1"), root);
 
-    p.tree.add_child(uni("vec3", "iResolution"), root);
+    p.ac(uni("vec3", "iResolution"), root);
 
-    let crt_curve_uv = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("vec2"), crt_curve_uv);
-    p.tree.add_child(v("CRTCurveUV"), crt_curve_uv);
-    p.tree.add_child(v("vec2 uv"), crt_curve_uv);
+    let crt_curve_uv = p.ac(bf(), root);
+    p.ac(v("vec2"), crt_curve_uv);
+    p.ac(v("CRTCurveUV"), crt_curve_uv);
+    p.ac(v("vec2 uv"), crt_curve_uv);
 
-    let set_uv = p.tree.add_child(sv("uv"), root);
-    let multiply = p.tree.add_child(m(), set_uv);
-    p.tree.add_child(v("uv"), multiply);
+    let set_uv = p.ac(sv("uv"), root);
+    let multiply = p.ac(m(), set_uv);
+    p.ac(v("uv"), multiply);
     let subtract = p.tree.add_child(s(), multiply);
-    p.tree.add_child(v("2.0"), subtract);
-    p.tree.add_child(v("1.0"), subtract);
+    p.ac(v("2.0"), subtract);
+    p.ac(v("1.0"), subtract);
 
-    let set_offset = p.tree.add_child(sv("vec2 offset"), root);
-    let divide = p.tree.add_child(d(), set_offset);
+    let set_offset = p.ac(sv("vec2 offset"), root);
+    let divide = p.ac(d(), set_offset);
     c(&mut p, divide, cf("abs"), &[v("uv.yx")]);
     c(&mut p, divide, cf("vec2"), &[v("6.0"), v("4.0")]);
 
-    let set_uv = p.tree.add_child(sv("uv"), root);
-    let add = p.tree.add_child(a(), set_uv);
-    p.tree.add_child(v("uv"), add);
+    let set_uv = p.ac(sv("uv"), root);
+    let add = p.ac(a(), set_uv);
+    p.ac(v("uv"), add);
     let multiply = p.tree.add_child(m(), add);
-    p.tree.add_child(v("uv"), multiply);
-    p.tree.add_child(v("offset"), multiply);
-    p.tree.add_child(v("offset"), multiply);
+    p.ac(v("uv"), multiply);
+    p.ac(v("offset"), multiply);
+    p.ac(v("offset"), multiply);
 
-    let set_uv = p.tree.add_child(sv("uv"), root);
-    let multiply = p.tree.add_child(m(), set_uv);
-    p.tree.add_child(v("uv"), multiply);
-    let add = p.tree.add_child(a(), multiply);
-    p.tree.add_child(v("0.5"), add);
-    p.tree.add_child(v("0.5"), add);
+    let set_uv = p.ac(sv("uv"), root);
+    let multiply = p.ac(m(), set_uv);
+    p.ac(v("uv"), multiply);
+    let add = p.ac(a(), multiply);
+    p.ac(v("0.5"), add);
+    p.ac(v("0.5"), add);
 
-    let return_value = p.tree.add_child(r(), root);
-    p.tree.add_child(v("uv"), return_value);
-    p.tree.add_child(ef(), root);
+    let return_value = p.ac(r(), root);
+    p.ac(v("uv"), return_value);
+    p.ac(ef(), root);
 
-    let draw_vignette = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), draw_vignette);
-    p.tree.add_child(v("DrawVignette"), draw_vignette);
-    p.tree.add_child(v("inout vec3 color"), draw_vignette);
-    p.tree.add_child(v("vec2 uv"), draw_vignette);
+    let draw_vignette = p.ac(bf(), root);
+    p.ac(v("void"), draw_vignette);
+    p.ac(v("DrawVignette"), draw_vignette);
+    p.ac(v("inout vec3 color"), draw_vignette);
+    p.ac(v("vec2 uv"), draw_vignette);
 
-    let set_vignette = p.tree.add_child(sv("float vignette"), root);
-    let multiply = p.tree.add_child(m(), set_vignette);
-    p.tree.add_child(v("uv.x"), multiply);
-    p.tree.add_child(v("uv.y"), multiply);
+    let set_vignette = p.ac(sv("float vignette"), root);
+    let multiply = p.ac(m(), set_vignette);
+    p.ac(v("uv.x"), multiply);
+    p.ac(v("uv.y"), multiply);
 
-    let parenthesis = p.tree.add_child(ps(), multiply);
-    let subtract = p.tree.add_child(s(), parenthesis);
-    p.tree.add_child(v("1.0"), subtract);
-    p.tree.add_child(v("uv.x"), subtract);
+    let parenthesis = p.ac(ps(), multiply);
+    let subtract = p.ac(s(), parenthesis);
+    p.ac(v("1.0"), subtract);
+    p.ac(v("uv.x"), subtract);
 
-    let parenthesis = p.tree.add_child(ps(), multiply);
-    let subtract = p.tree.add_child(s(), parenthesis);
-    p.tree.add_child(v("1.0"), subtract);
-    p.tree.add_child(v("uv.y"), subtract);
+    let parenthesis = p.ac(ps(), multiply);
+    let subtract = p.ac(s(), parenthesis);
+    p.ac(v("1.0"), subtract);
+    p.ac(v("uv.y"), subtract);
 
-    let set_vignette = p.tree.add_child(sv("vignette"), root);
-    let clamp_call = p.tree.add_child(cf("clamp"), set_vignette);
-    let pow_call = p.tree.add_child(cf("pow"), clamp_call);
-    let multiply = p.tree.add_child(m(), pow_call);
-    p.tree.add_child(v("16.0"), multiply);
-    p.tree.add_child(v("vignette"), multiply);
-    p.tree.add_child(v("0.3"), pow_call);
+    let set_vignette = p.ac(sv("vignette"), root);
+    let clamp_call = p.ac(cf("clamp"), set_vignette);
+    let pow_call = p.ac(cf("pow"), clamp_call);
+    let multiply = p.ac(m(), pow_call);
+    p.ac(v("16.0"), multiply);
+    p.ac(v("vignette"), multiply);
+    p.ac(v("0.3"), pow_call);
 
-    p.tree.add_child(v("0.0"), clamp_call);
-    p.tree.add_child(v("1.0"), clamp_call);
+    p.ac(v("0.0"), clamp_call);
+    p.ac(v("1.0"), clamp_call);
 
-    let set_color = p.tree.add_child(sv("color"), root);
-    let multiply = p.tree.add_child(m(), set_color);
-    p.tree.add_child(v("color"), multiply);
-    p.tree.add_child(v("vignette"), multiply);
+    let set_color = p.ac(sv("color"), root);
+    let multiply = p.ac(m(), set_color);
+    p.ac(v("color"), multiply);
+    p.ac(v("vignette"), multiply);
 
-    p.tree.add_child(ef(), root);
+    p.ac(ef(), root);
 
     // void DrawScanline(inout vec3 color, vec2 uv)
-    let scanline = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), scanline);
-    p.tree.add_child(v("DrawScanline"), scanline);
-    p.tree.add_child(v("inout vec3 color"), scanline);
-    p.tree.add_child(v("vec2 uv"), scanline);
+    let scanline = p.ac(bf(), root);
+    p.ac(v("void"), scanline);
+    p.ac(v("DrawScanline"), scanline);
+    p.ac(v("inout vec3 color"), scanline);
+    p.ac(v("vec2 uv"), scanline);
 
-    let set_scanline = p.tree.add_child(sv("float scanline"), root);
-    let clamp_call = p.tree.add_child(cf("clamp"), set_scanline);
-    let add = ac(&mut p, a(), clamp_call);
-    ac(&mut p, v("0.0"), clamp_call);
-    ac(&mut p, v("1.0"), clamp_call);
+    let set_scanline = p.ac(sv("float scanline"), root);
+    let clamp_call = p.ac(cf("clamp"), set_scanline);
+    let add = p.ac(a(), clamp_call);
+    p.ac(v("0.0"), clamp_call);
+    p.ac(v("1.0"), clamp_call);
 
-    ac(&mut p, v("0.95"), add);
-    let multiply = ac(&mut p, m(), add);
-    ac(&mut p, v("0.5"), multiply);
-    let cos_call = ac(&mut p, cf("cos"), multiply);
-    let multiply = ac(&mut p, m(), cos_call);
-    ac(&mut p, v("3.14"), multiply);
+    p.ac(v("0.95"), add);
+    let multiply = p.ac(m(), add);
+    p.ac(v("0.5"), multiply);
+    let cos_call = p.ac(cf("cos"), multiply);
+    let multiply = p.ac(m(), cos_call);
+    p.ac(v("3.14"), multiply);
     let more = ac(&mut p, ps(), multiply);
-    ac(&mut p, v("240.0"), multiply);
-    ac(&mut p, v("10.0"), multiply);
+    p.ac(v("240.0"), multiply);
+    p.ac(v("10.0"), multiply);
 
     let add = ac(&mut p, a(), more);
-    ac(&mut p, v("uv.y"), add);
+    p.ac(v("uv.y"), add);
     let multiply = ac(&mut p, m(), add);
-    ac(&mut p, v("0.008"), multiply);
-    ac(&mut p, v("iTime"), multiply);
+    p.ac(v("0.008"), multiply);
+    p.ac(v("iTime"), multiply);
 
     let set_grille = ac(&mut p, sv("float grille"), root);
     let add = ac(&mut p, a(), set_grille);
-    ac(&mut p, v("0.85"), add);
+    p.ac(v("0.85"), add);
     let multiply = ac(&mut p, m(), add);
-    ac(&mut p, v("1.5"), multiply);
+    p.ac(v("1.5"), multiply);
     let clamp_call = ac(&mut p, cf("clamp"), multiply);
     let cos_call = ac(&mut p, cf("cos"), clamp_call);
     let multiply = ac(&mut p, m(), cos_call);
-    ac(&mut p, v("3.14"), multiply);
-    ac(&mut p, v("uv.x"), multiply);
+    p.ac(v("3.14"), multiply);
+    p.ac(v("uv.x"), multiply);
     p.ac(v("640.0"), multiply);
     p.ac(v("1.0"), multiply);
 
@@ -378,28 +378,28 @@ pub fn create_crt_fragment_shader() -> TreeProgram {
 pub fn create_default_fragment_shader() -> TreeProgram {
     let mut p = TreeProgram::new();
     let root = p.tree.node(pp("root", "don't print me"));
-    p.tree.add_child(pp("version", "100"), root);
-    p.tree.add_child(pc("lowp", "float"), root);
+    p.ac(pp("version", "100"), root);
+    p.ac(pc("lowp", "float"), root);
 
     // macroquad uniforms
-    p.tree.add_child(vary("vec2", "uv"), root);
-    p.tree.add_child(uni("sampler2D", "Texture"), root);
+    p.ac(vary("vec2", "uv"), root);
+    p.ac(uni("sampler2D", "Texture"), root);
 
     // mrmidi
-    p.tree.add_child(uni("float", "iTime"), root);
-    p.tree.add_child(uni("float", "iTimeDelta"), root);
-    p.tree.add_child(uni("int", "iFrame"), root);
+    p.ac(uni("float", "iTime"), root);
+    p.ac(uni("float", "iTimeDelta"), root);
+    p.ac(uni("int", "iFrame"), root);
 
     let main = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), main);
-    p.tree.add_child(v("main"), main);
+    p.ac(v("void"), main);
+    p.ac(v("main"), main);
 
-    let set_color = p.tree.add_child(sv("gl_FragCoord"), root);
-    let call_sample_texture = p.tree.add_child(cf("texture2D"), set_color);
-    p.tree.add_child(v("Texture"), call_sample_texture);
-    p.tree.add_child(v("uv"), call_sample_texture);
+    let set_color = p.ac(sv("gl_FragCoord"), root);
+    let call_sample_texture = p.ac(cf("texture2D"), set_color);
+    p.ac(v("Texture"), call_sample_texture);
+    p.ac(v("uv"), call_sample_texture);
 
-    p.tree.add_child(ef(), root);
+    p.ac(ef(), root);
     p
 }
 
@@ -407,78 +407,78 @@ pub fn create_default_vertex_shader() -> TreeProgram {
     let mut p = TreeProgram::new();
     let root = p.tree.node(pp("Rootnode", "Don't print."));
 
-    p.tree.add_child(pp("version", "100"), root);
+    p.ac(pp("version", "100"), root);
 
-    p.tree.add_child(pc("lowp", "float"), root);
+    p.ac(pc("lowp", "float"), root);
 
-    p.tree.add_child(atrib("vec3", "position"), root);
-    p.tree.add_child(atrib("vec2", "texcoord"), root);
+    p.ac(atrib("vec3", "position"), root);
+    p.ac(atrib("vec2", "texcoord"), root);
 
     // // macroquad uniforms
-    p.tree.add_child(vary("vec2", "uv"), root);
+    p.ac(vary("vec2", "uv"), root);
 
-    p.tree.add_child(uni("sampler2D", "Texture"), root);
-    p.tree.add_child(uni("mat4", "Model"), root);
-    p.tree.add_child(uni("mat4", "Projection"), root);
+    p.ac(uni("sampler2D", "Texture"), root);
+    p.ac(uni("mat4", "Model"), root);
+    p.ac(uni("mat4", "Projection"), root);
 
     // mrmidi
-    p.tree.add_child(uni("float", "iTime"), root);
-    p.tree.add_child(uni("float", "iTimeDelta"), root);
-    p.tree.add_child(uni("int", "iFrame"), root);
+    p.ac(uni("float", "iTime"), root);
+    p.ac(uni("float", "iTimeDelta"), root);
+    p.ac(uni("int", "iFrame"), root);
 
     let main = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), main);
-    p.tree.add_child(v("main"), main);
+    p.ac(v("void"), main);
+    p.ac(v("main"), main);
 
-    let set_position = p.tree.add_child(sv("gl_Position"), root);
-    let multiply = p.tree.add_child(m(), set_position);
-    p.tree.add_child(v("Projection"), multiply);
-    p.tree.add_child(v("Model"), multiply);
-    let call_conversion = p.tree.add_child(cf("vec4"), multiply);
-    p.tree.add_child(v("position"), call_conversion);
-    p.tree.add_child(v("1"), call_conversion);
+    let set_position = p.ac(sv("gl_Position"), root);
+    let multiply = p.ac(m(), set_position);
+    p.ac(v("Projection"), multiply);
+    p.ac(v("Model"), multiply);
+    let call_conversion = p.ac(cf("vec4"), multiply);
+    p.ac(v("position"), call_conversion);
+    p.ac(v("1"), call_conversion);
 
-    p.tree.add_child(ef(), root);
+    p.ac(ef(), root);
     p
 }
 
 pub fn create_crt_vertex_shader() -> TreeProgram {
     let mut p = TreeProgram::new();
-    let root = p.tree.node(pp("root", "don't print this");
-    p.tree.add_child(pp("version", "100"), root);
-    p.tree.add_child(pc("lowp", "float"), root);
+    let root = p.tree.node(pp("root", "don't print this"));
+    p.ac(pp("version", "100"), root);
+    p.ac(pc("lowp", "float"), root);
 
-    p.tree.add_child(atrib("vec3", "position"), root);
-    p.tree.add_child(atrib("vec2", "texcoord"), root);
-    p.tree.add_child(atrib("vec4", "color0"), root);
+    p.ac(atrib("vec3", "position"), root);
+    p.ac(atrib("vec2", "texcoord"), root);
+    p.ac(atrib("vec4", "color0"), root);
 
     // macroquad uniforms
-    p.tree.add_child(vary("vec2", "uv"), root);
-    p.tree.add_child(vary("vec4", "color"), root);
+    p.ac(vary("vec2", "uv"), root);
+    p.ac(vary("vec4", "color"), root);
 
-    p.tree.add_child(uni("mat4", "Model"), root);
-    p.tree.add_child(uni("mat4", "Projection"), root);
+    p.ac(uni("mat4", "Model"), root);
+    p.ac(uni("mat4", "Projection"), root);
 
-    let main = p.tree.add_child(bf(), root);
-    p.tree.add_child(v("void"), main);
-    p.tree.add_child(v("main"), main);
+    let main = p.ac(bf(), root);
+    p.ac(v("void"), main);
+    p.ac(v("main"), main);
 
-    let set_position = p.tree.add_child(sv("gl_Position"), root);
-    let multiply = p.tree.add_child(m(), set_position);
-    p.tree.add_child(v("Projection"), multiply);
-    p.tree.add_child(v("Model"), multiply);
-    let position_func = p.tree.add_child(cf("vec4"), multiply);
-    p.tree.add_child(v("position"), position_func);
-    p.tree.add_child(v("1"), position_func);
+    let set_position = p.ac(sv("gl_Position"), root);
+    let multiply = p.ac(m(), set_position);
+    p.ac(v("Projection"), multiply);
+    p.ac(v("Model"), multiply);
+    let position_func = p.ac(cf("vec4"), multiply);
+    p.ac(v("position"), position_func);
+    p.ac(v("1"), position_func);
 
-    let set_color = p.tree.add_child(sv("color"), root);
-    let divide = p.tree.add_child(d(), set_color);
-    p.tree.add_child(v("color0"), divide);
-    p.tree.add_child(v("255.0"), divide);
+    let set_color = p.ac(sv("color"), root);
+    let divide = p.ac(d(), set_color);
+    p.ac(v("color0"), divide);
+    p.ac(v("255.0"), divide);
 
-    let set_uv = p.tree.add_child(sv("uv"), root);
-    p.tree.add_child(v("textcoord"), set_uv);
+    let set_uv = p.ac(sv("uv"), root);
+    p.ac(v("textcoord"), set_uv);
 
-    p.tree.add_child(ef(), root);
+    p.ac(ef(), root);
     p
 }
