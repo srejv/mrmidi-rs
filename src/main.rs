@@ -16,39 +16,41 @@ use macroquad::ui::{
 
 const NUM_TRACKS: usize = 2;
 
-fn render_command(ui: &mut macroquad::ui::Ui, command: &crate::code::commands::Command, depth: usize) {
-    let name = format!("{}{}", " ".repeat(depth), crate::code::commands::to_string(&command));
-    let command_name = format!("{}{}", " ".repeat(depth), crate::code::commands::type_to_string(&command));
-    
+fn render_command(
+    ui: &mut macroquad::ui::Ui,
+    program: &mut crate::code::commands::TreeProgram,
+    node_idx: usize,
+    depth: usize,
+) {
+    let name = format!(
+        "{}{}",
+        " ".repeat(depth),
+        crate::code::commands::to_strang(&program.tree.arena[node_idx], &program.tree)
+    );
+    let command_name = format!(
+        "{}{}",
+        " ".repeat(depth),
+        crate::code::commands::type_to_strang(&program.tree.arena[node_idx])
+    );
+
     ui.label(None, &command_name);
     ui.label(None, &name);
 
-    match command {
-        crate::code::commands::Command::Multiply(left, right) => {
-            render_command(ui, & left, depth+1); 
-            render_command(ui, & right, depth+1);
-        },
-        crate::code::commands::Command::Add(left, right) => {
-            render_command(ui, & left, depth+1); 
-            render_command(ui, & right, depth+1);
-        },
-        crate::code::commands::Command::Divide(left, right) => {
-            render_command(ui, & left, depth+1); 
-            render_command(ui, & right, depth+1);
-        },
-        crate::code::commands::Command::Subtract(left, right) => {
-            render_command(ui, & left, depth+1); 
-            render_command(ui, & right, depth+1);
-        },
-        crate::code::commands::Command::SetVariable(var, expression) => {
-            let mut v = var.clone();
-            ui.input_text(hash!(), "<- variable name", &mut v);
-            render_command(ui, &expression, depth+1);
-        },
+    match program.tree.arena[node_idx].val.0 {
+        crate::code::commands::CommandType::Multiply => {
+        }
+        crate::code::commands::CommandType::Add => {
+        }
+        crate::code::commands::CommandType::Divide => {
+        }
+        crate::code::commands::CommandType::Subtract => {
+            
+        }
+        crate::code::commands::CommandType::SetVariable => {
+        }
 
         _ => {}
     }
-
 }
 
 #[macroquad::main("mrmidi-r(eturn)s")]
@@ -58,38 +60,40 @@ async fn main() {
     let mut program = crate::code::generator::create_crt_fragment_shader();
 
     let mut selected_row = 0;
-    let mut selected_command = program.commands.get(selected_row).unwrap();
+    let mut selected_command = &program.tree.arena[0].val;
     let mut selected_column = 0;
+
+    let mut selectedNode: usize = 0;
     loop {
         set_default_camera();
 
         if is_key_pressed(KeyCode::Up) {
-            if selected_row > 0 {
+            if program.tree.arena[selectedNode].children.len() == 0 {
+            } else if selected_row > 0 {
                 selected_row -= 1;
             }
-            selected_command = program.commands.get(selected_row).unwrap();
         }
         if is_key_pressed(KeyCode::Down) {
-            if selected_row < program.commands.len()-1 {
+            if program.tree.arena[selectedNode].children.len() == 0 {
+            } else if selected_row < program.tree.arena[selectedNode].children.len() - 1 {
                 selected_row += 1;
-            }
-            selected_command = program.commands.get(selected_row).unwrap();
+            }   
         }
 
         if is_key_pressed(KeyCode::Left) {
-            if selected_column > 0 {
-                selected_column -= 1;
+            if let Some(parentIdx) = program.tree.arena[selectedNode].parent {
+                selectedNode = parentIdx;
+                selected_row = 0;
             }
-            // selected_command = Some(program.commands.get(selected_row).unwrap());
         }
         if is_key_pressed(KeyCode::Right) {
-            if selected_column < program.commands.len()-1 {
-                selected_column += 1;
+            if program.tree.arena[selectedNode].children.len() == 0 {
+                
+            } else if selected_row < program.tree.arena[selectedNode].children.len() - 1 {
+                selectedNode = program.tree.arena[selectedNode].children[selected_row];
+                selected_row = 0;
             }
-            // selected_command = Some(program.commands.get(selected_row).unwrap());
         }
-
-        
 
         widgets::Window::new(
             hash!(),
@@ -100,22 +104,22 @@ async fn main() {
         .ui(&mut *root_ui(), |ui| {
             ui.label(None, "Selected commands view");
 
-            render_command(ui, &mut selected_command, 0);
+            render_command(ui, &mut program, selectedNode, 0);
 
             ui.label(None, "Commands List");
 
             ui.separator();
 
-            for (i, command) in program.commands.iter().enumerate() {
-                let name = crate::code::commands::to_string(&command);
-                let command_name = crate::code::commands::type_to_string(&command);
-                let selected = if i == selected_row {
-                    "->"
-                } else {
-                    ""
-                };
-                let label = format!("{}. {}{}: {}", i+1, selected, command_name, name);
+            let mut i = 0;
+            let root = &program.tree.arena[selectedNode];
+            for childIdx in &root.children {
+                let child = &program.tree.arena[*childIdx];
+                let name = crate::code::commands::to_strang(&child, &program.tree);
+                let command_name = crate::code::commands::type_to_strang(&child);
+                let selected = if i == selected_row { "->" } else { "" };
+                let label = format!("{}. {}{}: {}", i + 1, selected, command_name, name);
                 ui.label(None, &label);
+                i+=1;
             }
         });
 
