@@ -36,21 +36,25 @@ impl Audio {
             image_buffer: Image::gen_image_color(256, 256, BLACK),
         }
     }
+
+    pub fn play(&mut self) {
+        self.input_stream.play().unwrap();
+    }
+
+    pub fn pause(&mut self) {
+        self.input_stream.pause().unwrap();
+    }
 }
 
 pub fn update_buffer(audio: &mut Audio) {
     // recv.try_recv(), do a whole thing match i guess?
     match audio.recv.try_recv() {
         Ok(data) => {
-            println!("{:?} samples", data);
+            // println!("{:?} samples", data);
             // buffer.extend(data);
         }
         Err(e) => {}
     }
-}
-
-pub fn begin_audio(audio: &mut Audio) {
-    audio.input_stream.play().unwrap();
 }
 
 fn test_stream(stream: &cpal::Stream) {

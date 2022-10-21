@@ -414,7 +414,7 @@ pub fn create_default_fragment_shader() -> TreeProgram {
     p.ac(v("void"), main);
     p.ac(v("main"), main);
 
-    let set_color = p.ac(sv("gl_FragCoord"), root);
+    let set_color = p.ac(sv("gl_FragColor"), root);
     let call_sample_texture = p.ac(cf("texture2D"), set_color);
     p.ac(v("Texture"), call_sample_texture);
     p.ac(v("uv"), call_sample_texture);
@@ -457,6 +457,9 @@ pub fn create_default_vertex_shader() -> TreeProgram {
     let call_conversion = p.ac(cf("vec4"), multiply);
     p.ac(v("position"), call_conversion);
     p.ac(v("1"), call_conversion);
+
+    let set_uv = p.ac(sv("uv"), root);
+    p.ac(v("texcoord"), set_uv);
 
     p.ac(ef(), root);
     p

@@ -83,6 +83,23 @@ impl TreeProgram {
             println!("");
         }
     }
+
+    pub fn to_string(&mut self) -> String {
+        let mut strings: Vec<String> = Vec::new();
+        for child_idx in &self.tree.arena[0].children {
+            let idx = *child_idx;
+            let row = to_strang(&self.tree.arena[idx], &self.tree);
+            let cmd_type = &self.tree.arena[idx].val;
+            let mut ending = "";
+            if TreeProgram::root_command_should_end_on_semi2(&cmd_type) {
+                ending = ";";
+            }
+
+            strings.push(format!("{}{}", &row, &ending));
+        }
+
+        return strings.join("\n");
+    }
 }
 
 pub fn to_strang(node: &Node<CodeNode>, arena: &ArenaTree<CodeNode>) -> String {

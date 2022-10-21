@@ -33,58 +33,93 @@ fn render_command(
         crate::code::commands::type_to_strang(&program.tree.arena[node_idx])
     );
 
+    let num_children = program.tree.arena[node_idx].children.len();
+    let n_child_str = format!("{}", &num_children);
     ui.label(None, &command_name);
     ui.label(None, &name);
+    ui.label(None, &n_child_str);
 
     match program.tree.arena[node_idx].val.0 {
-        crate::code::commands::CommandType::Multiply => {}
-        crate::code::commands::CommandType::Add => {}
-        crate::code::commands::CommandType::Divide => {}
-        crate::code::commands::CommandType::Subtract => {}
-        crate::code::commands::CommandType::SetVariable => {}
-
+        crate::code::commands::CommandType::Value => {
+            ui.label(None, "Value! Should be a leaf!");
+        }
+        crate::code::commands::CommandType::Multiply => {
+            ui.label(None, "Multiply!");
+        }
+        crate::code::commands::CommandType::Add => {
+            ui.label(None, "Add!");
+        }
+        crate::code::commands::CommandType::Divide => {
+            ui.label(None, "Divide!");
+        }
+        crate::code::commands::CommandType::Subtract => {
+            ui.label(None, "Subtract!");
+        }
+        crate::code::commands::CommandType::SetVariable => {
+            ui.label(None, "SetVariable!");
+        }
         _ => {}
     }
 }
 
-#[macroquad::main("mrmidi-r(eturn)s")]
-async fn main() {
-    // engine::audio::print_audio_device_status();
-    crate::code::generator::test_program();
-    let mut program = crate::code::generator::create_crt_fragment_shader();
+struct TreeEditor {
+    pub program: crate::code::commands::TreeProgram,
+    pub selected_row: usize,
+    pub selected_node: usize,
+    pub is_open: bool,
+}
 
-    let mut selected_row = 0;
-    let mut selected_command = &program.tree.arena[0].val;
-    let mut selected_column = 0;
-
-    let mut selectedNode: usize = 0;
-    loop {
-        set_default_camera();
-
+fn render_tree_editor(tree_editor: &mut TreeEditor) {
+    if tree_editor.is_open {
         if is_key_pressed(KeyCode::Up) {
-            if program.tree.arena[selectedNode].children.len() == 0 {
-            } else if selected_row > 0 {
-                selected_row -= 1;
+            if tree_editor.program.tree.arena[tree_editor.selected_node]
+                .children
+                .len()
+                == 0
+            {
+            } else if tree_editor.selected_row > 0 {
+                tree_editor.selected_row -= 1;
             }
         }
         if is_key_pressed(KeyCode::Down) {
-            if program.tree.arena[selectedNode].children.len() == 0 {
-            } else if selected_row < program.tree.arena[selectedNode].children.len() - 1 {
-                selected_row += 1;
+            if tree_editor.program.tree.arena[tree_editor.selected_node]
+                .children
+                .len()
+                == 0
+            {
+            } else if tree_editor.selected_row
+                < tree_editor.program.tree.arena[tree_editor.selected_node]
+                    .children
+                    .len()
+                    - 1
+            {
+                tree_editor.selected_row += 1;
             }
         }
 
         if is_key_pressed(KeyCode::Left) {
-            if let Some(parentIdx) = program.tree.arena[selectedNode].parent {
-                selectedNode = parentIdx;
-                selected_row = 0;
+            if let Some(parent_idx) =
+                tree_editor.program.tree.arena[tree_editor.selected_node].parent
+            {
+                tree_editor.selected_node = parent_idx;
+                tree_editor.selected_row = 0;
             }
         }
         if is_key_pressed(KeyCode::Right) {
-            if program.tree.arena[selectedNode].children.len() == 0 {
-            } else if selected_row < program.tree.arena[selectedNode].children.len() - 1 {
-                selectedNode = program.tree.arena[selectedNode].children[selected_row];
-                selected_row = 0;
+            if tree_editor.program.tree.arena[tree_editor.selected_node]
+                .children
+                .len()
+                == 0
+            {
+            } else if tree_editor.selected_row
+                < tree_editor.program.tree.arena[tree_editor.selected_node]
+                    .children
+                    .len()
+            {
+                tree_editor.selected_node = tree_editor.program.tree.arena
+                    [tree_editor.selected_node]
+                    .children[tree_editor.selected_row];
+                tree_editor.selected_row = 0;
             }
         }
 
@@ -97,102 +132,134 @@ async fn main() {
         .ui(&mut *root_ui(), |ui| {
             ui.label(None, "Selected commands view");
 
-            render_command(ui, &mut program, selectedNode, 0);
+            render_command(ui, &mut tree_editor.program, tree_editor.selected_node, 0);
 
             ui.label(None, "Commands List");
 
             ui.separator();
 
             let mut i = 0;
-            let root = &program.tree.arena[selectedNode];
-            for childIdx in &root.children {
-                let child = &program.tree.arena[*childIdx];
-                let name = crate::code::commands::to_strang(&child, &program.tree);
+            let root = &tree_editor.program.tree.arena[tree_editor.selected_node];
+            for child_idx in &root.children {
+                let child = &tree_editor.program.tree.arena[*child_idx];
+                let name = crate::code::commands::to_strang(&child, &tree_editor.program.tree);
                 let command_name = crate::code::commands::type_to_strang(&child);
-                let selected = if i == selected_row { "->" } else { "" };
+                let selected = if i == tree_editor.selected_row {
+                    "->"
+                } else {
+                    ""
+                };
                 let label = format!("{}. {}{}: {}", i + 1, selected, command_name, name);
                 ui.label(None, &label);
                 i += 1;
             }
         });
-
-        next_frame().await
     }
-    /*
-        return;
+}
 
-        let ferris = load_texture("assets/rust.png").await.unwrap();
+#[macroquad::main("mrmidi-r(eturn)s")]
+async fn main() {
+    // engine::audio::print_audio_device_status();
+    // crate::code::generator::test_program();
 
-        let mut tracks = Vec::new();
-        for i in 0..NUM_TRACKS {
-            let mut track = Track::new(format!("iChannel{}", i));
-            track.texture0 = Some(ferris);
-            tracks.push(track);
-        }
-        let mut app_state = AppState::new(tracks);
+    let mut tree_editor = TreeEditor {
+        program: crate::code::generator::create_crt_fragment_shader(),
+        selected_row: 0,
+        selected_node: 0,
+        is_open: false,
+    };
 
-        let time_start = std::time::SystemTime::now();
-        let mut time_last_frame = std::time::SystemTime::now();
-        let mut frame: i32 = 0;
+    let ferris = load_texture("assets/rust.png").await.unwrap();
 
-        let w = macroquad::window::screen_width();
-        let h = macroquad::window::screen_height();
-        let aspect_ratio = w / h;
+    let mut tracks = Vec::new();
+    for i in 0..NUM_TRACKS {
+        let mut track = Track::new(format!("iChannel{}", i));
+        track.texture0 = Some(ferris);
+        tracks.push(track);
+    }
+    let mut app_state = AppState::new(tracks);
+
+    let time_start = std::time::SystemTime::now();
+    let mut time_last_frame = std::time::SystemTime::now();
+    let mut frame: i32 = 0;
+
+    let w = macroquad::window::screen_width();
+    let h = macroquad::window::screen_height();
+    let aspect_ratio = w / h;
+    app_state
+        .post_processing_material
+        .set_uniform("iResolution", (w, h, aspect_ratio));
+
+    app_state.audio.play();
+    app_state.audio.pause();
+
+    app_state.midi.start();
+    // crate::engine::midi::midi_start(&mut app_state.midi);
+
+    loop {
+        let time_new = std::time::SystemTime::now();
+        let time_delta = time_new.duration_since(time_last_frame).unwrap();
+        let time_since_start = time_new.duration_since(time_start).unwrap();
+        time_last_frame = time_new;
+
+        crate::engine::audio::update_buffer(&mut app_state.audio);
+
+        app_state.midi.update();
+
+        app_state.post_processing_material.set_texture(
+            "iMidi",
+            Texture2D::from_rgba8(
+                app_state.midi.buffer.width,
+                app_state.midi.buffer.height,
+                &app_state.midi.buffer.bytes[..],
+            ),
+        );
+
         app_state
             .post_processing_material
-            .set_uniform("iResolution", (w, h, aspect_ratio));
+            .set_uniform("iTime", time_since_start.as_secs_f32());
+        app_state
+            .post_processing_material
+            .set_uniform("iTimeDelta", time_delta.as_secs_f32());
+        app_state
+            .post_processing_material
+            .set_uniform("iFrame", frame);
 
-        crate::engine::audio::begin_audio(&mut app_state.audio);
-
-        loop {
-            let time_new = std::time::SystemTime::now();
-            let time_delta = time_new.duration_since(time_last_frame).unwrap();
-            let time_since_start = time_new.duration_since(time_start).unwrap();
-            time_last_frame = time_new;
-
-            crate::engine::audio::update_buffer(&mut app_state.audio);
-
-            app_state
-                .post_processing_material
+        clear_background(WHITE);
+        for track in &mut app_state.tracks {
+            track
+                .material
                 .set_uniform("iTime", time_since_start.as_secs_f32());
-            app_state
-                .post_processing_material
+            track
+                .material
                 .set_uniform("iTimeDelta", time_delta.as_secs_f32());
-            app_state
-                .post_processing_material
-                .set_uniform("iFrame", frame);
-
-            clear_background(WHITE);
-            for track in &mut app_state.tracks {
-                track
-                    .material
-                    .set_uniform("iTime", time_since_start.as_secs_f32());
-                track
-                    .material
-                    .set_uniform("iTimeDelta", time_delta.as_secs_f32());
-                track.material.set_uniform("iFrame", frame);
-                render_track(track);
-            }
-            render_post_process(&mut app_state);
-
-            if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Tab) {
-                app_state.show_gui = !app_state.show_gui;
-            }
-            if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Right) {
-                app_state.selected_track =
-                    std::cmp::min(app_state.selected_track + 1, app_state.tracks.len() - 1);
-            }
-            if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Left) {
-                if app_state.selected_track != 0 {
-                    app_state.selected_track = std::cmp::max(app_state.selected_track - 1, 0);
-                }
-            }
-            if app_state.show_gui {
-                render_gui(&mut app_state);
-            }
-
-            frame += 1;
-            next_frame().await
+            track.material.set_uniform("iFrame", frame);
+            render_track(track);
         }
-    */
+        render_post_process(&mut app_state);
+
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Tab) {
+            app_state.show_gui = !app_state.show_gui;
+        }
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Right) {
+            app_state.selected_track =
+                std::cmp::min(app_state.selected_track + 1, app_state.tracks.len() - 1);
+        }
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Left) {
+            if app_state.selected_track != 0 {
+                app_state.selected_track = std::cmp::max(app_state.selected_track - 1, 0);
+            }
+        }
+        if app_state.show_gui {
+            render_gui(&mut app_state);
+        }
+
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Key1) {
+            tree_editor.is_open = !tree_editor.is_open;
+        }
+        render_tree_editor(&mut tree_editor);
+
+        frame += 1;
+        next_frame().await
+    }
 }

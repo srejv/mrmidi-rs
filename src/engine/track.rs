@@ -22,12 +22,32 @@ pub struct Track {
     pub output_name: String,
 
     pub clear_color: Option<Color>,
+
+    pub vertex_shader_tree: crate::code::commands::TreeProgram,
+    pub fragment_shader_tree: crate::code::commands::TreeProgram,
 }
 
 impl Track {
     pub fn new(name: String) -> Self {
-        let vertex_shader = std::fs::read_to_string("assets/shaders/default.vert").unwrap();
-        let fragment_shader = std::fs::read_to_string("assets/shaders/default.frag").unwrap();
+        //let vertex_shader = std::fs::read_to_string("assets/shaders/default.vert").unwrap();
+        //let fragment_shader = std::fs::read_to_string("assets/shaders/default.frag").unwrap();
+
+        let mut vertex_shader_tree = crate::code::generator::create_default_vertex_shader();
+        let mut fragment_shader_tree = crate::code::generator::create_default_fragment_shader();
+
+        println!("Vert Treeprint:");
+        vertex_shader_tree.print();
+
+        println!("Frag Treeprint:");
+        fragment_shader_tree.print();
+
+        let vertex_shader = vertex_shader_tree.to_string();
+        let fragment_shader = fragment_shader_tree.to_string();
+
+        println!("Vertshader to_string:");
+        println!("{}", vertex_shader);
+        println!("Fragshader to_string:");
+        println!("{}", fragment_shader);
 
         let pipeline_params = PipelineParams {
             depth_write: true,
@@ -82,6 +102,9 @@ impl Track {
             output_name: name,
 
             clear_color: None,
+
+            fragment_shader_tree: fragment_shader_tree,
+            vertex_shader_tree: vertex_shader_tree,
         }
     }
 }

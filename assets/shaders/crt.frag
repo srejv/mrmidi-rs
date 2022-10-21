@@ -11,7 +11,11 @@ uniform sampler2D Texture;
 uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 
+uniform sampler2D iMidi;
+
 uniform vec3 iResolution;
+
+
 
 // https://www.shadertoy.com/view/XtlSD7
 vec2 CRTCurveUV(vec2 uv)
@@ -52,6 +56,8 @@ void main() {
     DrawVignette(res, crtUV);
     DrawScanline(res, uv);
 
+    vec3 midi_input = texture2D(iMidi, uv).rgb;
+    // res = vec3(res.x * midi_input.x, res.y * midi_input.y, res.z * midi_input.z);
 
-    gl_FragColor = vec4(res, 1.0);
+    gl_FragColor = vec4(midi_input, 1.0);
 }

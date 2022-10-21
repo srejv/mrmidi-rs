@@ -33,6 +33,7 @@ pub struct AppState {
     pub skin: macroquad::ui::Skin,
 
     pub audio: Audio,
+    pub midi: crate::engine::midi::Midi,
 }
 
 impl AppState {
@@ -59,6 +60,8 @@ impl AppState {
             m.uniforms.push(b);
         }
 
+        m.textures.push("iMidi".to_owned());
+
         let vertex_shader = std::fs::read_to_string("assets/shaders/crt.vert").unwrap();
         let fragment_shader = std::fs::read_to_string("assets/shaders/crt.frag").unwrap();
         let post_processing_material = load_material(&vertex_shader, &fragment_shader, m).unwrap();
@@ -81,6 +84,7 @@ impl AppState {
             built_in_uniforms: BuiltInUniforms::new(),
             skin: root_ui().default_skin(),
             audio: Audio::new(),
+            midi: crate::engine::midi::Midi::new(),
         }
     }
 }
