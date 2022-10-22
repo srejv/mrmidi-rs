@@ -43,9 +43,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.65"
+version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98161a4e3e2184da77bb14f02184cdd111e83bbbcc9979dfee3c44b9a85f5602"
+checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
 
 [[package]]
 name = "autocfg"
@@ -335,6 +335,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "gif"
+version = "0.11.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3edd93c6756b4dfaf2709eafcc345ba2636565295c198a9cfbf75fa5e3e00b06"
+dependencies = [
+ "color_quant",
+ "weezl",
+]
+
+[[package]]
+name = "gif-dispose"
+version = "3.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "243e0347e8f4384181cb12069d87b9dae021c41bdaada7bd0d6743ad6d95c1d7"
+dependencies = [
+ "gif",
+ "imgref",
+ "rgb",
+]
+
+[[package]]
 name = "glam"
 version = "0.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -377,6 +398,12 @@ dependencies = [
  "num-traits",
  "png",
 ]
+
+[[package]]
+name = "imgref"
+version = "1.9.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2cf49df1085dcfb171460e4592597b84abe50d900fb83efb6e41b20fefd6c2c"
 
 [[package]]
 name = "itoa"
@@ -588,9 +615,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cpal",
+ "gif",
+ "gif-dispose",
  "macroquad",
  "midir",
  "midly",
+ "rgb",
  "serde",
  "serde_json",
 ]
@@ -925,6 +955,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
+name = "rgb"
+version = "0.8.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3603b7d71ca82644f79b5a06d1220e9a58ede60bd32255f698cb1af8838b8db3"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -953,15 +992,15 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "serde"
-version = "1.0.145"
+version = "1.0.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
+checksum = "d193d69bae983fc11a79df82342761dfbf28a99fc8d203dca4c3c1b590948965"
 
 [[package]]
 name = "serde_json"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41feea4228a6f1cd09ec7a3593a682276702cd67b5273544757dae23c096f074"
+checksum = "6ce777b7b150d76b9cf60d28b55f5847135a003f7d7350c6be7a773508ce7d45"
 dependencies = [
  "itoa",
  "ryu",
@@ -1124,6 +1163,12 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "weezl"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9193164d4de03a926d909d3bc7c30543cecb35400c02114792c2cae20d5e2dbb"
 
 [[package]]
 name = "winapi"

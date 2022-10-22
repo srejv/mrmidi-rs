@@ -12,6 +12,7 @@ uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 
 uniform sampler2D iMidi;
+uniform sampler2D iAudio;
 
 uniform vec3 iResolution;
 
@@ -57,7 +58,8 @@ void main() {
     DrawScanline(res, uv);
 
     vec3 midi_input = texture2D(iMidi, uv).rgb;
+    vec3 audio_input = texture2D(iAudio, uv).rgb;
     // res = vec3(res.x * midi_input.x, res.y * midi_input.y, res.z * midi_input.z);
 
-    gl_FragColor = vec4(midi_input, 1.0);
+    gl_FragColor = vec4(audio_input, 1.0);
 }

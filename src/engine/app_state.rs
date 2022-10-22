@@ -61,6 +61,7 @@ impl AppState {
         }
 
         m.textures.push("iMidi".to_owned());
+        m.textures.push("iAudio".to_owned());
 
         let vertex_shader = std::fs::read_to_string("assets/shaders/crt.vert").unwrap();
         let fragment_shader = std::fs::read_to_string("assets/shaders/crt.frag").unwrap();

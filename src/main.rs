@@ -41,23 +41,42 @@ fn render_command(
 
     match program.tree.arena[node_idx].val.0 {
         crate::code::commands::CommandType::Value => {
-            ui.label(None, "Value! Should be a leaf!");
+            ui.label(
+                None,
+                "Value! Should be a leaf! We should probably separate value, variable and type.",
+            );
         }
         crate::code::commands::CommandType::Multiply => {
-            ui.label(None, "Multiply!");
+            ui.label(None, "Multiply! Multiplies children together");
         }
         crate::code::commands::CommandType::Add => {
-            ui.label(None, "Add!");
+            ui.label(None, "Add! Adds children together");
         }
         crate::code::commands::CommandType::Divide => {
-            ui.label(None, "Divide!");
+            ui.label(None, "Divide! Divides children together");
         }
         crate::code::commands::CommandType::Subtract => {
-            ui.label(None, "Subtract!");
+            ui.label(None, "Subtract! Subtracts children together");
         }
         crate::code::commands::CommandType::SetVariable => {
-            ui.label(None, "SetVariable!");
+            ui.label(None, "SetVariable! First child sets the variable");
         }
+        crate::code::commands::CommandType::BeginFunction => {
+            ui.label(None, "BeginFunction! First child is type, second child is name, then all the arguments as separate children");
+        }
+        crate::code::commands::CommandType::EndFunction => {
+            ui.label(None, "EndFunction! End function");
+        }
+        crate::code::commands::CommandType::BeginIf => {
+            ui.label(None, "Begin If! First child is check expression");
+        }
+        crate::code::commands::CommandType::EndIf => {
+            ui.label(None, "EndIf! End if");
+        }
+        crate::code::commands::CommandType::DeclareVariable => {
+            ui.label(None, "DeclareVariable! Value is name, child is type?");
+        }
+
         _ => {}
     }
 }
@@ -157,8 +176,11 @@ fn render_tree_editor(tree_editor: &mut TreeEditor) {
     }
 }
 
+mod gif;
+
 #[macroquad::main("mrmidi-r(eturn)s")]
 async fn main() {
+    let mut animation = crate::gif::GifAnimation::load("assets/gifs/animation.gif".to_string()).await;
     // engine::audio::print_audio_device_status();
     // crate::code::generator::test_program();
 
@@ -191,10 +213,15 @@ async fn main() {
         .set_uniform("iResolution", (w, h, aspect_ratio));
 
     app_state.audio.play();
-    app_state.audio.pause();
-
     app_state.midi.start();
-    // crate::engine::midi::midi_start(&mut app_state.midi);
+
+    app_state
+        .post_processing_material
+        .set_texture("iAudio", app_state.audio.audio_tex);
+
+    app_state
+        .post_processing_material
+        .set_texture("iMidi", app_state.midi.tex);
 
     loop {
         let time_new = std::time::SystemTime::now();
@@ -202,18 +229,11 @@ async fn main() {
         let time_since_start = time_new.duration_since(time_start).unwrap();
         time_last_frame = time_new;
 
-        crate::engine::audio::update_buffer(&mut app_state.audio);
+        app_state.audio.update();
+        app_state.audio.audio_tex.update(&app_state.audio.buffer);
 
         app_state.midi.update();
-
-        app_state.post_processing_material.set_texture(
-            "iMidi",
-            Texture2D::from_rgba8(
-                app_state.midi.buffer.width,
-                app_state.midi.buffer.height,
-                &app_state.midi.buffer.bytes[..],
-            ),
-        );
+        app_state.midi.tex.update(&app_state.midi.buffer);
 
         app_state
             .post_processing_material
@@ -260,6 +280,10 @@ async fn main() {
         render_tree_editor(&mut tree_editor);
 
         frame += 1;
+
+        animation.draw();
+        animation.tick();
+
         next_frame().await
     }
 }

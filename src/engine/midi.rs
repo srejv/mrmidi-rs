@@ -24,14 +24,19 @@ fn channel_key_to_index(channel: &u4, key: &u7, width: usize, offset: usize) -> 
 
 pub struct Midi {
     pub buffer: Image,
+    pub tex: Texture2D,
     pub recv: Option<std::sync::mpsc::Receiver<Vec<u8>>>,
     input_connection: Option<midir::MidiInputConnection<()>>,
 }
 
 impl Midi {
     pub fn new() -> Self {
+        let buffer = Image::gen_image_color(32, 32, WHITE);
+        let tex = Texture2D::from_image(&buffer);
+
         Self {
-            buffer: Image::gen_image_color(32, 32, WHITE),
+            buffer: buffer,
+            tex: tex,
             recv: None,
             input_connection: None,
         }
