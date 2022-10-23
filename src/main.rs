@@ -200,8 +200,14 @@ async fn main() {
     }
     let mut app_state = AppState::new(tracks);
 
-    app_state.tracks[0].animation = Some(crate::gif::GifAnimation::load("assets/gifs/animation.gif".to_string()).await);
-    app_state.tracks[1].animation = Some(crate::gif::GifAnimation::load("assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string()).await);
+    app_state.tracks[0].animation =
+        Some(crate::gif::GifAnimation::load("assets/gifs/animation.gif".to_string()).await);
+    app_state.tracks[1].animation = Some(
+        crate::gif::GifAnimation::load(
+            "assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string(),
+        )
+        .await,
+    );
 
     let time_start = std::time::SystemTime::now();
     let mut time_last_frame = std::time::SystemTime::now();
@@ -262,13 +268,11 @@ async fn main() {
                 .material
                 .set_uniform("iTimeDelta", time_delta.as_secs_f32());
             track.material.set_uniform("iFrame", frame);
-            render_track(track);            
+            render_track(track);
         }
 
-        
         // Post process
         render_post_process(&mut app_state);
-
 
         // Tree editor
         if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Tab) {

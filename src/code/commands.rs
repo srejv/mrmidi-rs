@@ -1,11 +1,11 @@
 #[derive(PartialEq, Clone, Copy)]
-pub enum Type{
+pub enum Type {
     Float,
     Vec2,
     Vec3,
     Vec4,
     Int,
-    Sampler2D, // How do the rest work? Sampler 1d? sampler 3D? We probably want 2 channel input on audio. Midi is also 2 channel. 
+    Sampler2D, // How do the rest work? Sampler 1d? sampler 3D? We probably want 2 channel input on audio. Midi is also 2 channel.
 }
 
 #[derive(PartialEq, Clone, Copy)]

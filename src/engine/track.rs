@@ -3,7 +3,53 @@ use macroquad::prelude::*;
 use crate::engine::mesh::MyMesh;
 use crate::engine::uniform::Uniform;
 
+use crate::gif::GifAnimation;
+struct MuhGif {
+    animation: GifAnimation,
+    position: Vec2,
+}
+impl MuhGif {
+    pub fn new(animation: GifAnimation, position: Vec2) -> Self {
+        Self {
+            animation,
+            position,
+        }
+    }
 
+    pub fn draw(&mut self) {
+        self.animation.draw_at(self.position.x, self.position.y);
+    }
+}
+
+struct MuhMesh {
+    mesh_type: MyMesh,
+    position: Vec3,
+    size: Vec3,
+    texture: Option<Texture2D>,
+}
+impl MuhMesh {
+    pub fn new(mesh_type: MyMesh, position: Vec3, size: Vec3, texture: Option<Texture2D>) -> Self {
+        Self {
+            mesh_type,
+            position,
+            size,
+            texture,
+        }
+    }
+
+    pub fn draw(&self) {
+        match self.mesh_type {
+            MyMesh::Plane => draw_plane(
+                self.position,
+                vec2(self.size.x, self.size.z),
+                self.texture,
+                WHITE,
+            ),
+            MyMesh::Sphere => draw_sphere(self.position, self.size.x, self.texture, WHITE),
+            MyMesh::Cube => draw_cube(self.position, self.size, self.texture, WHITE),
+        }
+    }
+}
 
 pub struct Track {
     pub pipeline_params: PipelineParams,
@@ -85,17 +131,13 @@ impl Track {
             position: vec3(-15., 15., -5.),
             up: vec3(0., 1., 0.),
             target: vec3(0., 5., -5.),
-            // render_target: Some(render_target),
+            render_target: Some(render_target),
             ..Default::default()
         };
 
-        
-        let mut camera_2d = Camera2D::from_display_rect(Rect::new(0., 0., screen_width(), screen_height()));
+        let mut camera_2d =
+            Camera2D::from_display_rect(Rect::new(0., 0., screen_width(), screen_height()));
         camera_2d.render_target = Some(render_target);
-        /*let camera_2d = Camera2D {
-            render_target: Some(render_target),
-            ..Default::default()
-        };*/
 
         Self {
             pipeline_params,
@@ -141,7 +183,6 @@ pub fn render_track(track: &mut Track) {
         Color::new(0.75, 0.75, 0.75, 0.75),
     );
 
-    
     gl_use_material(track.material);
     match track.mesh {
         MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), track.texture0, WHITE),
@@ -149,12 +190,10 @@ pub fn render_track(track: &mut Track) {
         MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), track.texture0, WHITE),
     }
 
-/*
     if let Some(anim) = &track.animation {
         set_camera(&track.camera_2d);
-        clear_background(WHITE);
         anim.draw();
     }
-*/
+
     gl_use_default_material();
 }
