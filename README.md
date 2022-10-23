@@ -193,3 +193,25 @@ Could be a fun excercise in dynamically building shaders.
     - noise amount
     
 
+## Player
+
+### Steps
+#### 1. Setup screen, 
+
+where you set up audio/midi/screensize etc whatever we need to set up but we don't want to give inputs while playing
+can (maybe should?) be a completely different window, if possible.
+
+#### Playing state
+
+Playing the settings
+You can change patterns/presets
+You can modify exported performance parameters
+
+Watchdog on config files for external updates (tmp solution)
+
+## Editor
+
+Let's you edit the configuration. 
+Should do some kind of test run so nothing explodes when saving? Maybe the player should load into a new memory area first, confirm then swap idk.
+The idea is that the player always plays and you can customize your editor accordingly or whatever.
+Should be able to be a machine imo, so it would work with a yoshi sized device? Since Yoshi has USB-C it has potiential to be HDMI out.
