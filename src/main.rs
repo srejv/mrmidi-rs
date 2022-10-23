@@ -180,7 +180,6 @@ mod gif;
 
 #[macroquad::main("mrmidi-r(eturn)s")]
 async fn main() {
-    let mut animation = crate::gif::GifAnimation::load("assets/gifs/animation.gif".to_string()).await;
     // engine::audio::print_audio_device_status();
     // crate::code::generator::test_program();
 
@@ -191,7 +190,7 @@ async fn main() {
         is_open: false,
     };
 
-    let ferris = load_texture("assets/rust.png").await.unwrap();
+    let ferris = load_texture("assets/textures/rust.png").await.unwrap();
 
     let mut tracks = Vec::new();
     for i in 0..NUM_TRACKS {
@@ -200,6 +199,9 @@ async fn main() {
         tracks.push(track);
     }
     let mut app_state = AppState::new(tracks);
+
+    app_state.tracks[0].animation = Some(crate::gif::GifAnimation::load("assets/gifs/animation.gif".to_string()).await);
+    app_state.tracks[1].animation = Some(crate::gif::GifAnimation::load("assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string()).await);
 
     let time_start = std::time::SystemTime::now();
     let mut time_last_frame = std::time::SystemTime::now();
@@ -224,6 +226,7 @@ async fn main() {
         .set_texture("iMidi", app_state.midi.tex);
 
     loop {
+        // Update states
         let time_new = std::time::SystemTime::now();
         let time_delta = time_new.duration_since(time_last_frame).unwrap();
         let time_since_start = time_new.duration_since(time_start).unwrap();
@@ -246,7 +249,12 @@ async fn main() {
             .set_uniform("iFrame", frame);
 
         clear_background(WHITE);
+
+        // Tracks
         for track in &mut app_state.tracks {
+            if let Some(anim) = &mut track.animation {
+                anim.tick();
+            }
             track
                 .material
                 .set_uniform("iTime", time_since_start.as_secs_f32());
@@ -254,10 +262,15 @@ async fn main() {
                 .material
                 .set_uniform("iTimeDelta", time_delta.as_secs_f32());
             track.material.set_uniform("iFrame", frame);
-            render_track(track);
+            render_track(track);            
         }
+
+        
+        // Post process
         render_post_process(&mut app_state);
 
+
+        // Tree editor
         if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Tab) {
             app_state.show_gui = !app_state.show_gui;
         }
@@ -280,9 +293,6 @@ async fn main() {
         render_tree_editor(&mut tree_editor);
 
         frame += 1;
-
-        animation.draw();
-        animation.tick();
 
         next_frame().await
     }

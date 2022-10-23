@@ -61,5 +61,5 @@ void main() {
     vec3 audio_input = texture2D(iAudio, uv).rgb;
     // res = vec3(res.x * midi_input.x, res.y * midi_input.y, res.z * midi_input.z);
 
-    gl_FragColor = vec4(audio_input, 1.0);
+    gl_FragColor = vec4(res, 1.0);
 }

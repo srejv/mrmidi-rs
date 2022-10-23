@@ -3,6 +3,8 @@ use macroquad::prelude::*;
 use crate::engine::mesh::MyMesh;
 use crate::engine::uniform::Uniform;
 
+
+
 pub struct Track {
     pub pipeline_params: PipelineParams,
     pub material: Material,
@@ -14,6 +16,7 @@ pub struct Track {
     pub mesh: MyMesh,
 
     pub camera: Camera3D,
+    pub camera_2d: Camera2D,
 
     pub texture0: Option<Texture2D>,
 
@@ -25,6 +28,8 @@ pub struct Track {
 
     pub vertex_shader_tree: crate::code::commands::TreeProgram,
     pub fragment_shader_tree: crate::code::commands::TreeProgram,
+
+    pub animation: Option<crate::gif::GifAnimation>,
 }
 
 impl Track {
@@ -80,9 +85,17 @@ impl Track {
             position: vec3(-15., 15., -5.),
             up: vec3(0., 1., 0.),
             target: vec3(0., 5., -5.),
-            render_target: Some(render_target),
+            // render_target: Some(render_target),
             ..Default::default()
         };
+
+        
+        let mut camera_2d = Camera2D::from_display_rect(Rect::new(0., 0., screen_width(), screen_height()));
+        camera_2d.render_target = Some(render_target);
+        /*let camera_2d = Camera2D {
+            render_target: Some(render_target),
+            ..Default::default()
+        };*/
 
         Self {
             pipeline_params,
@@ -94,6 +107,7 @@ impl Track {
 
             mesh,
             camera,
+            camera_2d,
 
             texture0: None,
 
@@ -105,6 +119,8 @@ impl Track {
 
             fragment_shader_tree: fragment_shader_tree,
             vertex_shader_tree: vertex_shader_tree,
+
+            animation: None,
         }
     }
 }
@@ -125,11 +141,20 @@ pub fn render_track(track: &mut Track) {
         Color::new(0.75, 0.75, 0.75, 0.75),
     );
 
+    
     gl_use_material(track.material);
     match track.mesh {
         MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), track.texture0, WHITE),
         MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., track.texture0, WHITE),
         MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), track.texture0, WHITE),
     }
+
+/*
+    if let Some(anim) = &track.animation {
+        set_camera(&track.camera_2d);
+        clear_background(WHITE);
+        anim.draw();
+    }
+*/
     gl_use_default_material();
 }
