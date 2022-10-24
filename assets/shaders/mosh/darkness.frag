@@ -6,7 +6,7 @@
 // uniform sampler2D tDiffuse;
 // varying vec2 vUv;
 
-void vignette(inout vec4 out_color.  vec2 vUv, float offset, float darkness) {
+void vignette_filter(inout vec4 out_color.  vec2 vUv, float offset, float darkness) {
     vec2 uv = ( vUv - vec2( 0.5 ) ) * vec2( offset );
     out_color = vec4( mix( out_color.rgb, vec3( 1.0 - darkness ), dot( uv, uv ) ), out_color.a );
 } 

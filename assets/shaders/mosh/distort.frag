@@ -19,17 +19,21 @@
  
 // ${um}  // Include noise.frag
 
-void bad_tv_maybe(inout vec4 out_color, sampler2D channel, vec2 uv, float distortion, float distortion2, float speed, float rollSpeed) { 
+vec2 warp_uv(vec2 uv, float distortion, float distortion2, float speed, float rollSpeed) {
     vec2 p = uv; 
     float ty = iTime * speed * 17.346; 
     float yt = p.y - ty; 
  
     //thick distortion 
     float offset = noise2d(vec2(yt*3.0,0.0))*0.2; 
-    offset = offset*distortion * offset*distortion * offset; 
+    offset = offset*distortion * offset*distortion * offset;
+
     //fine distortion 
     offset += noise2d(vec2(yt*50.0,0.0))*distortion2*0.002; 
-     
+    return vec2(fract(p.x + offset), fract(p.y - iTime * rollSpeed));
+}
+
+vec4 bad_tv_maybe_sampler(sampler2D channel, vec2 uv, float distortion, float distortion2, float speed, float rollSpeed) { 
     //combine distortion on X with roll on Y 
-    out_color = texture2D(channel,  vec2(fract(p.x + offset),fract(p.y - iTime * rollSpeed) )); 
-} 
+    return texture2D(channel, warp_uv()); 
+}

@@ -12,7 +12,7 @@
 // varying vec2 vUv;
 
 // Maybe the sampling should appear before, so it's stackable.
-void contrast_brightness(inout vec4 out_color, float brightness, float contrast) {
+void contrast_brightness_filter(inout vec4 out_color, float brightness, float contrast) {
     // out_color = texture2D( tDiffuse, vUv );
     out_color.rgb += brightness;
     if (contrast > 0.0) 

@@ -5,7 +5,7 @@ const float TWO_PI = 6.283185307179586;
 
 // uniform sampler2D tDiffuse;
 //uniform float amount;
-u//niform float time;
+//niform float time;
 
 // varying vec2 vUv;
 

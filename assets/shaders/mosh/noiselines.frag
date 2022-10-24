@@ -9,7 +9,7 @@
 // uniform float height; 
 // varying vec2 vUv; 
  
-#define PI 3.14159265359 
+// #define PI 3.14159265359 
  
 highp float rand( const in vec2 uv ) { 
     const highp float a = 12.9898, b = 78.233, c = 43758.5453; 

@@ -1,0 +1,2 @@
+const float TWO_PI = 6.283185307179586;
+#define PI 3.14159265359 
