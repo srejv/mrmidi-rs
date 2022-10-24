@@ -1,6 +1,5 @@
 use macroquad::prelude::*;
 
-mod code;
 mod engine;
 
 use engine::app_state::render_gui;
@@ -174,8 +173,6 @@ fn render_tree_editor(tree_editor: &mut TreeEditor) {
         });
     }
 }
-
-mod gif;
 
 #[macroquad::main("mrmidi-r(eturn)s")]
 async fn main() {
