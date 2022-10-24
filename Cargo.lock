@@ -610,6 +610,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "mrmidi-arena"
+version = "0.1.0"
+
+[[package]]
+name = "mrmidi-code"
+version = "0.1.0"
+dependencies = [
+ "macroquad",
+ "mrmidi-arena",
+]
+
+[[package]]
+name = "mrmidi-gif"
+version = "0.1.0"
+dependencies = [
+ "gif",
+ "gif-dispose",
+ "macroquad",
+ "rgb",
+]
+
+[[package]]
 name = "mrmidi-rs"
 version = "0.1.0"
 dependencies = [
@@ -620,6 +642,8 @@ dependencies = [
  "macroquad",
  "midir",
  "midly",
+ "mrmidi-code",
+ "mrmidi-gif",
  "rgb",
  "serde",
  "serde_json",
