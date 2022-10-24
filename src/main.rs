@@ -17,19 +17,19 @@ const NUM_TRACKS: usize = 2;
 
 fn render_command(
     ui: &mut macroquad::ui::Ui,
-    program: &mut crate::code::commands::TreeProgram,
+    program: &mut mrmidi_code::commands::TreeProgram,
     node_idx: usize,
     depth: usize,
 ) {
     let name = format!(
         "{}{}",
         " ".repeat(depth),
-        crate::code::commands::to_strang(&program.tree.arena[node_idx], &program.tree)
+        mrmidi_code::commands::to_strang(&program.tree.arena[node_idx], &program.tree)
     );
     let command_name = format!(
         "{}{}",
         " ".repeat(depth),
-        crate::code::commands::type_to_strang(&program.tree.arena[node_idx])
+        mrmidi_code::commands::type_to_strang(&program.tree.arena[node_idx])
     );
 
     let num_children = program.tree.arena[node_idx].children.len();
@@ -39,40 +39,40 @@ fn render_command(
     ui.label(None, &n_child_str);
 
     match program.tree.arena[node_idx].val.0 {
-        crate::code::commands::CommandType::Value => {
+        mrmidi_code::commands::CommandType::Value => {
             ui.label(
                 None,
                 "Value! Should be a leaf! We should probably separate value, variable and type.",
             );
         }
-        crate::code::commands::CommandType::Multiply => {
+        mrmidi_code::commands::CommandType::Multiply => {
             ui.label(None, "Multiply! Multiplies children together");
         }
-        crate::code::commands::CommandType::Add => {
+        mrmidi_code::commands::CommandType::Add => {
             ui.label(None, "Add! Adds children together");
         }
-        crate::code::commands::CommandType::Divide => {
+        mrmidi_code::commands::CommandType::Divide => {
             ui.label(None, "Divide! Divides children together");
         }
-        crate::code::commands::CommandType::Subtract => {
+        mrmidi_code::commands::CommandType::Subtract => {
             ui.label(None, "Subtract! Subtracts children together");
         }
-        crate::code::commands::CommandType::SetVariable => {
+        mrmidi_code::commands::CommandType::SetVariable => {
             ui.label(None, "SetVariable! First child sets the variable");
         }
-        crate::code::commands::CommandType::BeginFunction => {
+        mrmidi_code::commands::CommandType::BeginFunction => {
             ui.label(None, "BeginFunction! First child is type, second child is name, then all the arguments as separate children");
         }
-        crate::code::commands::CommandType::EndFunction => {
+        mrmidi_code::commands::CommandType::EndFunction => {
             ui.label(None, "EndFunction! End function");
         }
-        crate::code::commands::CommandType::BeginIf => {
+        mrmidi_code::commands::CommandType::BeginIf => {
             ui.label(None, "Begin If! First child is check expression");
         }
-        crate::code::commands::CommandType::EndIf => {
+        mrmidi_code::commands::CommandType::EndIf => {
             ui.label(None, "EndIf! End if");
         }
-        crate::code::commands::CommandType::DeclareVariable => {
+        mrmidi_code::commands::CommandType::DeclareVariable => {
             ui.label(None, "DeclareVariable! Value is name, child is type?");
         }
 
@@ -81,7 +81,7 @@ fn render_command(
 }
 
 struct TreeEditor {
-    pub program: crate::code::commands::TreeProgram,
+    pub program: mrmidi_code::commands::TreeProgram,
     pub selected_row: usize,
     pub selected_node: usize,
     pub is_open: bool,
@@ -160,8 +160,8 @@ fn render_tree_editor(tree_editor: &mut TreeEditor) {
             let root = &tree_editor.program.tree.arena[tree_editor.selected_node];
             for child_idx in &root.children {
                 let child = &tree_editor.program.tree.arena[*child_idx];
-                let name = crate::code::commands::to_strang(&child, &tree_editor.program.tree);
-                let command_name = crate::code::commands::type_to_strang(&child);
+                let name = mrmidi_code::commands::to_strang(&child, &tree_editor.program.tree);
+                let command_name = mrmidi_code::commands::type_to_strang(&child);
                 let selected = if i == tree_editor.selected_row {
                     "->"
                 } else {
@@ -180,10 +180,10 @@ mod gif;
 #[macroquad::main("mrmidi-r(eturn)s")]
 async fn main() {
     // engine::audio::print_audio_device_status();
-    // crate::code::generator::test_program();
+    // mrmidi_code::generator::test_program();
 
     let mut tree_editor = TreeEditor {
-        program: crate::code::generator::create_crt_fragment_shader(),
+        program: mrmidi_code::generator::create_crt_fragment_shader(),
         selected_row: 0,
         selected_node: 0,
         is_open: false,
@@ -200,7 +200,7 @@ async fn main() {
     let mut app_state = AppState::new(tracks);
 
     use crate::engine::track::MuhGif;
-    use crate::gif::GifAnimation;
+    use mrmidi_gif::GifAnimation;
     app_state.tracks[0].animations.push(MuhGif::new(
         GifAnimation::load("assets/gifs/animation.gif".to_string()).await,
     ));

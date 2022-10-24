@@ -3,7 +3,8 @@ use macroquad::prelude::*;
 use crate::engine::mesh::MyMesh;
 use crate::engine::uniform::Uniform;
 
-use crate::gif::GifAnimation;
+use mrmidi_gif::GifAnimation;
+
 pub struct MuhGif {
     animation: GifAnimation,
     position: Vec2,
@@ -76,8 +77,8 @@ pub struct Track {
 
     pub clear_color: Option<Color>,
 
-    pub vertex_shader_tree: crate::code::commands::TreeProgram,
-    pub fragment_shader_tree: crate::code::commands::TreeProgram,
+    pub vertex_shader_tree: mrmidi_code::commands::TreeProgram,
+    pub fragment_shader_tree: mrmidi_code::commands::TreeProgram,
 
     pub animation: Option<GifAnimation>,
     pub animations: Vec<MuhGif>,
@@ -88,8 +89,8 @@ impl Track {
         //let vertex_shader = std::fs::read_to_string("assets/shaders/default.vert").unwrap();
         //let fragment_shader = std::fs::read_to_string("assets/shaders/default.frag").unwrap();
 
-        let mut vertex_shader_tree = crate::code::generator::create_default_vertex_shader();
-        let mut fragment_shader_tree = crate::code::generator::create_default_fragment_shader();
+        let mut vertex_shader_tree = mrmidi_code::generator::create_default_vertex_shader();
+        let mut fragment_shader_tree = mrmidi_code::generator::create_default_fragment_shader();
 
         println!("Vert Treeprint:");
         vertex_shader_tree.print();
