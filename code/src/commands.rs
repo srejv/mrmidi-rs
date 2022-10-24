@@ -44,7 +44,7 @@ impl Default for CommandType {
     }
 }
 
-use arena::{ArenaTree, Node};
+use mrmidi_arena::{ArenaTree, Node};
 pub type CodeNode = (CommandType, String);
 
 pub struct TreeProgram {
