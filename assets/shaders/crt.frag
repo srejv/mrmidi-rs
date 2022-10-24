@@ -88,7 +88,7 @@ void main() {
     vec4 channel0 = dot_matrix_sampler(iChannel0, mehuv, 40.0, 1.0, 0.5);
 
     vec4 channel1 = texture2D(iChannel1, mehuv).rgba;
-    two_color(channel1, vec3(0.2, 0.8, 0.3), vec3(0.1,0.3,0.1));
+    two_color_filter(channel1, vec3(0.2, 0.8, 0.3), vec3(0.1,0.3,0.1));
     vec4 res = mix(channel0, channel1, sin(iTime) * 0.5 + 0.5) * color.rgba;
  	
     if (crtUV.x < 0.0 || crtUV.x > 1.0 || crtUV.y < 0.0 || crtUV.y > 1.0)
