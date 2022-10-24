@@ -1,18 +1,19 @@
 // mm = { uniforms: { tDiffuse: { value: null }, amount: { value: 0 }, passthru: { value: 0 } }, 
 // vertexShader: "" + "\t${cm}" + "\t", 
 
-uniform sampler2D tDiffuse; 
-uniform float amount; 
-uniform float passthru; 
-varying vec2 vUv; 
-vec2 texel = vec2(1.0 /512.0); 
+// uniform sampler2D tDiffuse; 
+// uniform float amount; 
+// uniform float passthru; 
+// varying vec2 vUv; 
+
+vec2 texel = vec2(1.0 /512.0);
  
 mat3 G[2]; 
  
 const mat3 g0 = mat3( 1.0, 2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, -1.0 ); 
 const mat3 g1 = mat3( 1.0, 0.0, -1.0, 2.0, 0.0, -2.0, 1.0, 0.0, -1.0 );  
   
-void main(void) 
+void maybe_linocut(inout vec4 s, sampler2D channel, vec2 vUv, float amount, float passthru) 
 { 
     mat3 I; 
     float cnv[2]; 
@@ -24,7 +25,7 @@ void main(void)
     /* fetch the 3x3 neighbourhood and use the RGB vectors length as intensity value */ 
     for (float i=0.0; i<3.0; i++) 
         for (float j=0.0; j<3.0; j++) { 
-            sample = texture2D( tDiffuse, vUv + texel * vec2(i-1.0,j-1.0) ).rgb; 
+            sample = texture2D( channel, vUv + texel * vec2(i-1.0,j-1.0) ).rgb; 
             I[int(i)][int(j)] = length(sample); 
         } 
     
@@ -34,7 +35,7 @@ void main(void)
         cnv[i] = dp3 * dp3;  
     } 
     
-    vec4 orig = texture2D( tDiffuse, vUv); 
+    vec4 orig = texture2D( channel, vUv); 
     
-    gl_FragColor = orig * passthru + vec4(0.5 * sqrt(cnv[0]*cnv[0]+cnv[1]*cnv[1])) * amount; 
+    out_color = orig * passthru + vec4(0.5 * sqrt(cnv[0]*cnv[0]+cnv[1]*cnv[1])) * amount; 
 } 

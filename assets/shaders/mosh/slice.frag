@@ -2,11 +2,11 @@
 // vertexShader: "" + "\t${cm}" + "\t", 
 
 
-uniform sampler2D tDiffuse; 
-varying vec2 vUv;
-uniform float amount; 
-uniform float speed;
-uniform float time; 
+// uniform sampler2D tDiffuse; 
+// varying vec2 vUv;
+// uniform float amount; 
+// uniform float speed;
+// uniform float time; 
  
 float random1d(float n){ 
     return fract(sin(n) * 43758.5453); 
@@ -30,12 +30,12 @@ float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); 
 }
 
-void main() { 
+void slice_draw(inout vec4 out_color, sampler2D channel, vec2 vUv, float amount, float speed) { 
     
     vec2 uv = vUv; 
     
-    float sTime = floor(time * speed * 6.0 * 24.0); 
-    vec3 inCol = texture2D(tDiffuse, uv).rgb; 
+    float sTime = floor(iTime * speed * 6.0 * 24.0); 
+    vec3 inCol = texture2D(channel, uv).rgb; 
     
     //copy orig 
     vec3 outCol = inCol; 
@@ -55,7 +55,7 @@ void main() {
         uvOff.x += hOffset; 
         vec2 uvOff = fract(uvOff); 
         if (insideRange(uv.y, sliceY, fract(sliceY+sliceH)) == 1.0 ){ 
-            outCol = texture2D(tDiffuse, uvOff).rgb; 
+            outCol = texture2D(channel, uvOff).rgb; 
         } 
     } 
     
@@ -68,13 +68,11 @@ void main() {
     //TODO - use col[1] array access 
     float rnd = random2d(vec2(sTime + amount, 9545.0)); 
     if (rnd < 0.33){ 
-        outCol.r = texture2D(tDiffuse, uvOff).r; 
+        outCol.r = texture2D(channel, uvOff).r; 
     } else if (rnd < 0.66){ 
-        outCol.g = texture2D(tDiffuse, uvOff).g; 
+        outCol.g = texture2D(channel, uvOff).g; 
     } else{ 
-        outCol.b = texture2D(tDiffuse, uvOff).b; 
+        outCol.b = texture2D(channel, uvOff).b; 
     } 
-    gl_FragColor = vec4(outCol,1.0); 
+    out_color = vec4(outCol,1.0); 
 } 
-
-

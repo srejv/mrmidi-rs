@@ -1,11 +1,11 @@
 // Pm = { uniforms: { tDiffuse: { type: "t", value: null }, centerBrightness: { type: "f", value: .5 }, powerCurve: { type: "f", value: 2 }, colorize: { type: "f", value: .1 } }, 
 // vertexShader: `" + "\t\t${cm}" + "\t`, 
 
-uniform sampler2D tDiffuse;
-uniform float centerBrightness;
-uniform float powerCurve;
-uniform float colorize;
-varying vec2 vUv;
+// uniform sampler2D tDiffuse;
+// uniform float centerBrightness;
+// uniform float powerCurve;
+// uniform float colorize;
+// varying vec2 vUv;
 
 vec3 rgb2hsv(vec3 c) {
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -22,8 +22,8 @@ vec3 hsv2rgb(vec3 c){
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-void main() {
-    vec3 origCol = texture2D( tDiffuse, vUv ).rgb;
+void hsl_colorize(inout vec4 out_color, sampler2D channel, vec2 uv, float centerBrightness, float powerCurve, float colorize) {
+    vec3 origCol = out_color.rgb;
     //convert to HSV
     vec3 hslColor = rgb2hsv(origCol);
     vec3 outColor = hslColor;
@@ -37,5 +37,5 @@ void main() {
     outColor = hsv2rgb(outColor); 
 
     //Additive Blend
-    gl_FragColor = vec4(outColor, 1.0);
+    out_color = vec4(outColor, 1.0);
 }

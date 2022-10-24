@@ -4,20 +4,24 @@ use crate::engine::mesh::MyMesh;
 use crate::engine::uniform::Uniform;
 
 use crate::gif::GifAnimation;
-struct MuhGif {
+pub struct MuhGif {
     animation: GifAnimation,
     position: Vec2,
 }
 impl MuhGif {
-    pub fn new(animation: GifAnimation, position: Vec2) -> Self {
+    pub fn new(animation: GifAnimation) -> Self {
         Self {
+            position: vec2(animation.pos_x(), animation.pos_y()),
             animation,
-            position,
         }
     }
 
     pub fn draw(&mut self) {
         self.animation.draw_at(self.position.x, self.position.y);
+    }
+
+    pub fn tick(&mut self) {
+        self.animation.tick();
     }
 }
 
@@ -75,7 +79,8 @@ pub struct Track {
     pub vertex_shader_tree: crate::code::commands::TreeProgram,
     pub fragment_shader_tree: crate::code::commands::TreeProgram,
 
-    pub animation: Option<crate::gif::GifAnimation>,
+    pub animation: Option<GifAnimation>,
+    pub animations: Vec<MuhGif>,
 }
 
 impl Track {
@@ -163,14 +168,15 @@ impl Track {
             vertex_shader_tree: vertex_shader_tree,
 
             animation: None,
+            animations: Vec::new(),
         }
     }
-}
 
-pub fn render_track(track: &mut Track) {
-    set_camera(&track.camera);
 
-    if let Some(clear_color) = track.clear_color {
+pub fn render(&mut self) {
+    set_camera(&self.camera);
+
+    if let Some(clear_color) = self.clear_color {
         clear_background(clear_color);
     } else {
         clear_background(WHITE);
@@ -183,17 +189,25 @@ pub fn render_track(track: &mut Track) {
         Color::new(0.75, 0.75, 0.75, 0.75),
     );
 
-    gl_use_material(track.material);
-    match track.mesh {
-        MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), track.texture0, WHITE),
-        MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., track.texture0, WHITE),
-        MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), track.texture0, WHITE),
+    gl_use_material(self.material);
+    match self.mesh {
+        MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), self.texture0, WHITE),
+        MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., self.texture0, WHITE),
+        MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), self.texture0, WHITE),
     }
 
-    if let Some(anim) = &track.animation {
-        set_camera(&track.camera_2d);
+    set_camera(&self.camera_2d);
+    for animation in &mut self.animations {
+        animation.draw();
+    }
+
+    if let Some(anim) = &self.animation {
+        
         anim.draw();
     }
 
     gl_use_default_material();
+}
+
+
 }

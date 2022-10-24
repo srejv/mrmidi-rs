@@ -5,7 +5,6 @@ uniform sampler2D tDiffuse;
 uniform float levels; 
 varying vec2 vUv; 
 
-void main() { 
-    vec4 col = texture2D( tDiffuse, vUv ); 
-    gl_FragColor.rgb = floor((col.rgb * levels) + vec3(0.5)) / levels; 
-} 
+void posterize(inout vec4 out_color, float levels) { 
+    out_color.rgb = floor((out_color.rgb * levels) + vec3(0.5)) / levels;
+}

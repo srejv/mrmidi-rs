@@ -9,19 +9,19 @@
 // rollSpeed: { type: "f", value: .05 } }, 
 // vertexShader: "" + "\t${cm}" + "\t", 
 
-uniform sampler2D tDiffuse; 
-uniform float time; 
-uniform float distortion;  
-uniform float distortion2; 
-uniform float speed; 
-uniform float rollSpeed; 
-varying vec2 vUv; 
+// uniform sampler2D tDiffuse; 
+// uniform float time; 
+// uniform float distortion;  
+// uniform float distortion2; 
+// uniform float speed; 
+// uniform float rollSpeed; 
+// varying vec2 vUv; 
  
 // ${um}  // Include noise.frag
 
-void main() { 
-    vec2 p = vUv; 
-    float ty = time * speed * 17.346; 
+void bad_tv_maybe(inout vec4 out_color, sampler2D channel, vec2 uv, float distortion, float distortion2, float speed, float rollSpeed) { 
+    vec2 p = uv; 
+    float ty = iTime * speed * 17.346; 
     float yt = p.y - ty; 
  
     //thick distortion 
@@ -31,5 +31,5 @@ void main() {
     offset += noise2d(vec2(yt*50.0,0.0))*distortion2*0.002; 
      
     //combine distortion on X with roll on Y 
-    gl_FragColor = texture2D(tDiffuse,  vec2(fract(p.x + offset),fract(p.y - time * rollSpeed) )); 
+    out_color = texture2D(channel,  vec2(fract(p.x + offset),fract(p.y - iTime * rollSpeed) )); 
 } 

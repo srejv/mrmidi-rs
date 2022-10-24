@@ -1,14 +1,13 @@
 // Am = { uniforms: { tDiffuse: { value: null }, time: { value: 0 }, noiseAmount: { value: .5 }, linesAmount: { value: .05 }, count: { value: 4096 }, height: { value: 4096 } }, 
 // vertexShader: "" + "\t${cm}" + "\t", 
 
-uniform sampler2D tDiffuse;
-uniform float time;  
-uniform float count; 
-uniform float noiseAmount;  
-uniform float linesAmount; 
-uniform float height; 
- 
-varying vec2 vUv; 
+// uniform sampler2D tDiffuse;
+// uniform float time;  
+// uniform float count; 
+// uniform float noiseAmount;  
+// uniform float linesAmount; 
+// uniform float height; 
+// varying vec2 vUv; 
  
 #define PI 3.14159265359 
  
@@ -18,13 +17,13 @@ highp float rand( const in vec2 uv ) {
     return fract(sin(sn) * c); 
 } 
  
-void main() { 
+void noise_lines(inout vec4 out_color, sampler2D channel, vec2 vUv, float count, float noiseAmount, float linesAmount, float height) { 
     
     // sample the source 
     vec4 cTextureScreen = texture2D( tDiffuse, vUv ); 
     
     // add noise 
-    float dx = rand( vUv + time ); 
+    float dx = rand( vUv + iTime ); 
     vec3 cResult = cTextureScreen.rgb * dx * noiseAmount; 
     
     // add scanlines 
@@ -34,7 +33,6 @@ void main() {
     
     // interpolate between source and result by intensity 
     cResult = cTextureScreen.rgb + ( cResult ); 
-    
-    gl_FragColor =  vec4( cResult, cTextureScreen.a ); 
-} 
 
+    out_color = vec4( cResult, cTextureScreen.a ); 
+} 

@@ -64,4 +64,4 @@ float noise2d(vec2 v) {
   g.x  = a0.x  * x0.x  + h.x  * x0.y; 
   g.yz = a0.yz * x12.xz + h.yz * x12.yw; 
   return 130.0 * dot(m, g); 
-}; 
+};

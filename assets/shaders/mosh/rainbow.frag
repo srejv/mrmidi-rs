@@ -13,16 +13,16 @@ vec3 rainbow2( in float t ){
     return 0.5 + 0.5*cos( 6.28318*(t+d) ); 
 } 
   
-void main() {
+void rainboo(inout vec4 out_color, sampler2D channel, vec2 vUv) {
     vec2 p = vUv;  
-    vec3 origCol = texture2D( tDiffuse, p ).rgb; 
+    vec3 origCol = texture2D( channel, p ).rgb; 
     
-    vec2 off = texture2D( tDiffuse, p ).rg - 0.5; 
+    vec2 off = texture2D( channel, p ).rg - 0.5; 
     p += off * offset; 
     vec3 rb = rainbow2( (p.x + p.y + time * 2.0) * 0.5); 
     
     vec3 col = mix(origCol,rb,amount); 
     
-    gl_FragColor = vec4(col, 1.0); 
+    out_color = vec4(col, 1.0); 
 } 
 

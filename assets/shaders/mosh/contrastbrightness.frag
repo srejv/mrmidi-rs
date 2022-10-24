@@ -6,20 +6,21 @@
 "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );", 
 "}"*/
 
-uniform sampler2D tDiffuse;
-uniform float brightness;
-uniform float contrast;
-varying vec2 vUv;
+// uniform sampler2D tDiffuse;
+// uniform float brightness;
+// uniform float contrast;
+// varying vec2 vUv;
 
-void main() {
-    gl_FragColor = texture2D( tDiffuse, vUv );
-    gl_FragColor.rgb += brightness;
+// Maybe the sampling should appear before, so it's stackable.
+void contrast_brightness(inout vec4 out_color, float brightness, float contrast) {
+    // out_color = texture2D( tDiffuse, vUv );
+    out_color.rgb += brightness;
     if (contrast > 0.0) 
     {
-        gl_FragColor.rgb = (gl_FragColor.rgb - 0.5) / (1.0 - contrast) + 0.5;
+        out_color.rgb = (out_color.rgb - 0.5) / (1.0 - contrast) + 0.5;
     } 
     else 
     {
-        gl_FragColor.rgb = (gl_FragColor.rgb - 0.5) * (1.0 + contrast) + 0.5;
+        out_color.rgb = (out_color.rgb - 0.5) * (1.0 + contrast) + 0.5;
     }
 }

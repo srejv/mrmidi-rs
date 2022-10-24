@@ -6,7 +6,6 @@ mod engine;
 use engine::app_state::render_gui;
 use engine::app_state::render_post_process;
 use engine::app_state::AppState;
-use engine::track::render_track;
 use engine::track::Track;
 
 use macroquad::ui::{
@@ -200,21 +199,18 @@ async fn main() {
     }
     let mut app_state = AppState::new(tracks);
 
-    app_state.tracks[0].animation =
-        Some(crate::gif::GifAnimation::load("assets/gifs/animation.gif".to_string()).await);
-    app_state.tracks[1].animation = Some(
-        crate::gif::GifAnimation::load(
-            "assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string(),
-        )
-        .await,
-    );
+    use crate::engine::track::MuhGif;
+    use crate::gif::GifAnimation;
+    app_state.tracks[0].animations.push(MuhGif::new(GifAnimation::load("assets/gifs/animation.gif".to_string()).await));
+    app_state.tracks[1].animations.push(MuhGif::new(GifAnimation::load("assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string()).await));
 
-    let time_start = std::time::SystemTime::now();
-    let mut time_last_frame = std::time::SystemTime::now();
+    use std::time::SystemTime;
+    let time_start = SystemTime::now();
+    let mut time_last_frame = SystemTime::now();
     let mut frame: i32 = 0;
 
-    let w = macroquad::window::screen_width();
-    let h = macroquad::window::screen_height();
+    let w = screen_width();
+    let h = screen_height();
     let aspect_ratio = w / h;
     app_state
         .post_processing_material
@@ -233,7 +229,7 @@ async fn main() {
 
     loop {
         // Update states
-        let time_new = std::time::SystemTime::now();
+        let time_new = SystemTime::now();
         let time_delta = time_new.duration_since(time_last_frame).unwrap();
         let time_since_start = time_new.duration_since(time_start).unwrap();
         time_last_frame = time_new;
@@ -258,8 +254,8 @@ async fn main() {
 
         // Tracks
         for track in &mut app_state.tracks {
-            if let Some(anim) = &mut track.animation {
-                anim.tick();
+            for animation in &mut track.animations {
+                animation.tick();
             }
             track
                 .material
@@ -268,14 +264,14 @@ async fn main() {
                 .material
                 .set_uniform("iTimeDelta", time_delta.as_secs_f32());
             track.material.set_uniform("iFrame", frame);
-            render_track(track);
+            track.render();
         }
 
         // Post process
         render_post_process(&mut app_state);
 
         // Tree editor
-        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Tab) {
+        if /*is_key_down(KeyCode::LeftControl) &&*/ is_key_pressed(KeyCode::Tab) {
             app_state.show_gui = !app_state.show_gui;
         }
         if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Right) {

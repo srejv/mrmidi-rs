@@ -1,12 +1,12 @@
 // xm = { uniforms: { tDiffuse: { type: "t", value: null }, time: { type: "f", value: 1 }, speed: { type: "f", value: .5 }, scale: { type: "f", value: .5 }, amount: { type: "f", value: .5 } }, 
 // vertexShader: "" + "\t${cm}" + "\t", 
 
-uniform sampler2D tDiffuse; 
-uniform float time;  
-uniform float scale;  
-uniform float amount; 
-uniform float speed; 
-varying vec2 vUv; 
+// uniform sampler2D tDiffuse; 
+// uniform float time;  
+// uniform float scale;  
+// uniform float amount; 
+// uniform float speed; 
+// varying vec2 vUv; 
  
 // ${um} : include noise! 
 
@@ -27,11 +27,11 @@ float getNoise(vec2 uv, float t) {
     return noise; 
 } 
  
-void main() { 
+void noise_sampler(inout vec4 out_color, sampler2D channel, vec2 vUv, float scale, float amount, float speed) { 
     vec2 uv = vUv; 
-    float noise = getNoise(uv, time * 24.0); 
+    float noise = getNoise(uv, iTime * 24.0); 
     vec2 noiseUv = uv + amount * noise; 
-    //wrap 
+    // wrap 
     noiseUv = fract(noiseUv); 
-    gl_FragColor = texture2D(tDiffuse,noiseUv); 
+    out_color = texture2D(channel, noiseUv); 
 }

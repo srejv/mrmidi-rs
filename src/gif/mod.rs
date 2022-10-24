@@ -94,11 +94,11 @@ impl GifAnimation {
         (frames, decoder.width(), decoder.height())
     }
 
-    fn pos_x(&self) -> f32 {
+    pub fn pos_x(&self) -> f32 {
         screen_width() / 2. - self.width as f32 / 2.
     }
 
-    fn pos_y(&self) -> f32 {
+    pub fn pos_y(&self) -> f32 {
         screen_height() / 2. - self.height as f32 / 2.
     }
 

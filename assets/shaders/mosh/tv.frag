@@ -28,16 +28,16 @@ float noise1d(float p){
 }
   
 const float TWO_PI = 6.283185307179586; 
- 
-void main() { 
+
+void some_tv(inout vec4 out_color, sampler2D channel, vec2 vUv,float slices, float offset, float speedV, float speedH) { 
     vec2 uv = vUv; 
     //variable width strips 
-    float n = noise1d(uv.y * slices + time * speedV * 3.0); 
+    float n = noise1d(uv.y * slices + iTime * speedV * 3.0); 
     float ns = steppedVal(fract(n  ),slices) + 2.0; 
     
     float nsr = random1d(ns); 
     vec2 uvn = uv; 
-    uvn.x += nsr * sin(time * TWO_PI + nsr * 20.0) * offset; 
-    gl_FragColor = texture2D(tDiffuse, uvn); 
+    uvn.x += nsr * sin(iTime * TWO_PI + nsr * 20.0) * offset; 
+    out_color = texture2D(channel, uvn); 
 } 
 

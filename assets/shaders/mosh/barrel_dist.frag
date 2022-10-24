@@ -1,12 +1,14 @@
 // pm = { uniforms: { tDiffuse: { type: "t", value: null }, amount: { type: "f", value: .5 }, time: { type: "f", value: 0 } }, 
 // vertexShader: "" + "${cm}" + "", 
-
+/*
 uniform sampler2D tDiffuse; 
-uniform float amount; 
-uniform float time; 
  
 varying vec2 vUv; 
- 
+*/
+
+// Might want to separate the helper functions.
+// Maybe postfix all function files as _func
+
 const int num_iter = 16; 
 const float reci_num_iter_f = 1.0 / float(num_iter); 
 const float gamma = 2.2; 
@@ -23,20 +25,20 @@ vec2 barrelDistortion( vec2 p, vec2 amt )
     p.x = radius * cos(theta);  
     p.y = radius * sin(theta); 
     return 0.5 * ( p + 1.0 ); 
-} 
+}
  
 float sat( float t ) 
 { 
     return clamp( t, 0.0, 1.0 ); 
-} 
+}
 
 float linterp( float t ) { 
     return sat( 1.0 - abs( 2.0*t - 1.0 ) ); 
-} 
+}
 
 float remap( float t, float a, float b ) { 
     return sat( (t - a) / (b - a) ); 
-} 
+}
 
 vec3 spectrum_offset( float t ) { 
     vec3 ret; 
@@ -51,41 +53,42 @@ vec3 spectrum_offset( float t ) {
 float nrand( vec2 n ) 
 { 
     return fract(sin(dot(n.xy, vec2(12.9898, 78.233)))* 43758.5453); 
-} 
+}
 
 vec3 lin2srgb( vec3 c ) 
 { 
     return pow( c, vec3(gamma) ); 
-} 
+}
 
 vec3 srgb2lin( vec3 c ) 
 { 
     return pow( c, vec3(1.0/gamma));
-} 
+}
 
-void main() { 
+void barrel_distortion(inout vec4 out_color, sampler2D channel, vec2 vUv, float amount) {
 
-    vec2 uv = vUv; 
+    vec2 in_uv = vUv; 
     //resolution independent 
+    
     vec2 max_distort = vec2(amount);  
 
     vec2 oversiz = barrelDistortion( vec2(1,1), max_distort ); 
-    uv = 2.0 * uv - 1.0; 
-    uv = uv / (oversiz*oversiz); 
-    uv = 0.5 * uv + 0.5; 
+    in_uv = 2.0 * in_uv - 1.0; 
+    in_uv = in_uv / (oversiz*oversiz); 
+    in_uv = 0.5 * in_uv + 0.5; 
 
     vec3 sumcol = vec3(0.0); 
     vec3 sumw = vec3(0.0); 
-    float rnd = nrand( uv + fract(time) ); 
+    float rnd = nrand( in_uv + fract(iTime) ); 
     for ( int i=0; i<num_iter;++i ){ 
         float t = (float(i)+rnd) * reci_num_iter_f; 
         vec3 w = spectrum_offset( t ); 
         sumw += w; 
-        sumcol += w * srgb2lin(texture2D( tDiffuse, barrelDistortion(uv, max_distort*t ) ).rgb);
+        sumcol += w * srgb2lin(texture2D( channel, barrelDistortion(in_uv, max_distort*t ) ).rgb);
     } 
 
     sumcol.rgb /= sumw; 
     vec3 outcol = lin2srgb(sumcol.rgb); 
     outcol += rnd/255.0; 
-    gl_FragColor = vec4( outcol, 1.0); 
+    out_color = vec4( outcol, 1.0); 
 }
