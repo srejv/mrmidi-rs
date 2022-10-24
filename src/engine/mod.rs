@@ -5,6 +5,5 @@ pub mod color_picker;
 pub mod internal_uniform;
 pub mod mesh;
 pub mod midi;
-pub mod shader_data;
 pub mod track;
 pub mod uniform;
