@@ -172,42 +172,38 @@ impl Track {
         }
     }
 
+    pub fn render(&mut self) {
+        set_camera(&self.camera);
 
-pub fn render(&mut self) {
-    set_camera(&self.camera);
+        if let Some(clear_color) = self.clear_color {
+            clear_background(clear_color);
+        } else {
+            clear_background(WHITE);
+        }
 
-    if let Some(clear_color) = self.clear_color {
-        clear_background(clear_color);
-    } else {
-        clear_background(WHITE);
+        draw_grid(
+            20,
+            1.,
+            Color::new(0.55, 0.55, 0.55, 0.75),
+            Color::new(0.75, 0.75, 0.75, 0.75),
+        );
+
+        gl_use_material(self.material);
+        match self.mesh {
+            MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), self.texture0, WHITE),
+            MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., self.texture0, WHITE),
+            MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), self.texture0, WHITE),
+        }
+
+        set_camera(&self.camera_2d);
+        for animation in &mut self.animations {
+            animation.draw();
+        }
+
+        if let Some(anim) = &self.animation {
+            anim.draw();
+        }
+
+        gl_use_default_material();
     }
-
-    draw_grid(
-        20,
-        1.,
-        Color::new(0.55, 0.55, 0.55, 0.75),
-        Color::new(0.75, 0.75, 0.75, 0.75),
-    );
-
-    gl_use_material(self.material);
-    match self.mesh {
-        MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), self.texture0, WHITE),
-        MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., self.texture0, WHITE),
-        MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), self.texture0, WHITE),
-    }
-
-    set_camera(&self.camera_2d);
-    for animation in &mut self.animations {
-        animation.draw();
-    }
-
-    if let Some(anim) = &self.animation {
-        
-        anim.draw();
-    }
-
-    gl_use_default_material();
-}
-
-
 }

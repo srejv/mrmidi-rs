@@ -201,8 +201,15 @@ async fn main() {
 
     use crate::engine::track::MuhGif;
     use crate::gif::GifAnimation;
-    app_state.tracks[0].animations.push(MuhGif::new(GifAnimation::load("assets/gifs/animation.gif".to_string()).await));
-    app_state.tracks[1].animations.push(MuhGif::new(GifAnimation::load("assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string()).await));
+    app_state.tracks[0].animations.push(MuhGif::new(
+        GifAnimation::load("assets/gifs/animation.gif".to_string()).await,
+    ));
+    app_state.tracks[1].animations.push(MuhGif::new(
+        GifAnimation::load(
+            "assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string(),
+        )
+        .await,
+    ));
 
     use std::time::SystemTime;
     let time_start = SystemTime::now();
@@ -271,7 +278,9 @@ async fn main() {
         render_post_process(&mut app_state);
 
         // Tree editor
-        if /*is_key_down(KeyCode::LeftControl) &&*/ is_key_pressed(KeyCode::Tab) {
+        if
+        /*is_key_down(KeyCode::LeftControl) &&*/
+        is_key_pressed(KeyCode::Tab) {
             app_state.show_gui = !app_state.show_gui;
         }
         if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Right) {
