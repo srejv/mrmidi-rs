@@ -5,7 +5,9 @@ mod engine;
 use engine::app_state::render_gui;
 use engine::app_state::render_post_process;
 use engine::app_state::AppState;
+use engine::track::Renderable;
 use engine::track::Track;
+use engine::track::Updateable;
 
 use macroquad::ui::{
     hash, root_ui,

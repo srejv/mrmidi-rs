@@ -5,6 +5,27 @@ use crate::engine::uniform::Uniform;
 
 use mrmidi_gif::GifAnimation;
 
+pub trait Renderable {
+    fn draw(&mut self);
+}
+
+pub trait Updateable {
+    fn tick(&mut self);
+}
+
+#[derive(Default)]
+pub struct MuhGrid {
+    slices: u32,
+    spacing: f32,
+    axes_color: Color,
+    other_color: Color,
+}
+impl Renderable for MuhGrid {
+    fn draw(&mut self) {
+        draw_grid(self.slices, self.spacing, self.axes_color, self.other_color);
+    }
+}
+
 pub struct MuhGif {
     animation: GifAnimation,
     position: Vec2,
@@ -16,12 +37,15 @@ impl MuhGif {
             animation,
         }
     }
+}
 
-    pub fn draw(&mut self) {
+impl Renderable for MuhGif {
+    fn draw(&mut self) {
         self.animation.draw_at(self.position.x, self.position.y);
     }
-
-    pub fn tick(&mut self) {
+}
+impl Updateable for MuhGif {
+    fn tick(&mut self) {
         self.animation.tick();
     }
 }
@@ -41,8 +65,10 @@ impl MuhMesh {
             texture,
         }
     }
+}
 
-    pub fn draw(&self) {
+impl Renderable for MuhMesh {
+    fn draw(&mut self) {
         match self.mesh_type {
             MyMesh::Plane => draw_plane(
                 self.position,
