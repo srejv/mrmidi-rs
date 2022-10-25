@@ -82,7 +82,12 @@ impl Midi {
                         // println!("{}: {:?} (len = {})", stamp, message, message.len());
                         let mut msg: Vec<u8> = Vec::new();
                         msg.extend_from_slice(message);
-                        send.send(msg);
+                        match send.send(msg) {
+                            Err(error) => {
+                                println!("problem sending msg, {}", error);
+                            }
+                            _ => {}
+                        }
                     },
                     (),
                 )
