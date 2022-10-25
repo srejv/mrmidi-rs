@@ -92,19 +92,8 @@ impl Track {
         let mut vertex_shader_tree = mrmidi_code::generator::create_default_vertex_shader();
         let mut fragment_shader_tree = mrmidi_code::generator::create_default_fragment_shader();
 
-        println!("Vert Treeprint:");
-        vertex_shader_tree.print();
-
-        println!("Frag Treeprint:");
-        fragment_shader_tree.print();
-
         let vertex_shader = vertex_shader_tree.to_string();
         let fragment_shader = fragment_shader_tree.to_string();
-
-        println!("Vertshader to_string:");
-        println!("{}", vertex_shader);
-        println!("Fragshader to_string:");
-        println!("{}", fragment_shader);
 
         let pipeline_params = PipelineParams {
             depth_write: true,
