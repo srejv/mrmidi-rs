@@ -3,8 +3,8 @@ use midir::{Ignore, MidiInput};
 use midly::num::u4;
 use midly::num::u7;
 use midly::{live::LiveEvent, MidiMessage};
+use std::error::Error;
 use std::io::Write;
-use std::sync::mpsc::channel;
 
 fn u4_to_usize(x: &u4) -> usize {
     x.as_int().into()
@@ -78,7 +78,7 @@ impl Midi {
                 .connect(
                     in_port,
                     "midir-read-input",
-                    move |stamp, message, _| {
+                    move |_stamp, message, _| {
                         // println!("{}: {:?} (len = {})", stamp, message, message.len());
                         let mut msg: Vec<u8> = Vec::new();
                         msg.extend_from_slice(message);
@@ -111,7 +111,7 @@ impl Midi {
                                 self.buffer.bytes[index] = u7_to_u8(&vel) * 2;
                             }
 
-                            MidiMessage::NoteOff { key, vel } => {
+                            MidiMessage::NoteOff { key, vel: _ } => {
                                 let width: usize = self.buffer.width() * 4;
                                 let index = channel_key_to_index(&channel, &key, width, 0);
                                 self.buffer.bytes[index] = 0;
@@ -133,8 +133,7 @@ impl Midi {
     }
 }
 
-use std::error::Error;
-
+#[allow(dead_code)]
 pub fn test_midi() -> Result<(), Box<dyn Error>> {
     let mut midi_in = MidiInput::new("midir reading input")?;
     midi_in.ignore(Ignore::None);

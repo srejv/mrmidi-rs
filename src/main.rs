@@ -11,7 +11,7 @@ use engine::track::Updateable;
 
 use macroquad::ui::{
     hash, root_ui,
-    widgets::{self, Label, TreeNode},
+    widgets::{self},
 };
 
 const NUM_TRACKS: usize = 2;

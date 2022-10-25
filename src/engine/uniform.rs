@@ -1,5 +1,6 @@
 use macroquad::prelude::*;
 
+#[allow(dead_code)]
 pub enum Uniform {
     Int(String),
     Float1(String),

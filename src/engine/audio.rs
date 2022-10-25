@@ -23,7 +23,7 @@ impl Audio {
     pub fn new() -> Self {
         let audio_buffer = Vec::new();
         let (send, recv) = channel();
-        let (stream, channel_count) = create_input_stream(move |data, x| {
+        let (stream, channel_count) = create_input_stream(move |data, _x| {
             let mut v = Vec::new();
             v.extend(data);
             send.send(v).unwrap();
@@ -47,17 +47,18 @@ impl Audio {
         self.input_stream.play().unwrap();
     }
 
+    #[allow(dead_code)]
     pub fn pause(&mut self) {
         self.input_stream.pause().unwrap();
     }
 
     pub fn update(&mut self) {
         let mut i = 0;
-        let mut done = false;
         // recv.try_recv(), do a whole thing match i guess?
         loop {
             match self.recv.try_recv() {
                 Ok(data) => {
+                    let mut done = false;
                     for sample in data {
                         if i < 512 * 4 {
                             self.buffer.bytes[i] = (127.0 * sample) as u8;
@@ -70,7 +71,7 @@ impl Audio {
                         break;
                     }
                 }
-                Err(e) => {
+                Err(_e) => {
                     break;
                 }
             }
@@ -78,6 +79,7 @@ impl Audio {
     }
 }
 
+#[allow(dead_code)]
 fn test_stream(stream: &cpal::Stream) {
     use std::thread::sleep;
     use std::time::Duration;
@@ -102,6 +104,7 @@ where
     (stream, config.channels())
 }
 
+#[allow(dead_code)]
 pub fn print_audio_device_status() -> Result<(), anyhow::Error> {
     println!("Supported hosts:\n  {:?}", cpal::ALL_HOSTS);
     let available_hosts = cpal::available_hosts();
