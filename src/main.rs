@@ -176,6 +176,52 @@ fn render_tree_editor(tree_editor: &mut TreeEditor) {
     }
 }
 
+use std::fs;
+
+fn files(dir: &std::path::Path) -> Result<Vec<std::path::PathBuf>, std::io::Error> {
+    Ok(fs::read_dir(dir)?
+        .into_iter()
+        .filter(|r| r.is_ok()) // Get rid of Err variants for Result<DirEntry>
+        .map(|r| r.unwrap().path()) // This is safe, since we only have the Ok variants
+        .filter(|r| !r.is_dir()) // Filter out non-folders
+        .collect())
+}
+
+async fn load_animations(track: &mut Track, look_in: &str) {
+    use crate::engine::track::MuhGif;
+    use mrmidi_gif::GifAnimation;
+
+    let new_look_in = std::path::Path::new(look_in);
+    let paths = files(&new_look_in).unwrap();
+    for path in paths {
+        let new_animation = MuhGif::new(GifAnimation::load_from_path_buf(&path).await);
+        track.animations.push(new_animation);
+    }
+}
+async fn load_textures(track: &mut Track, look_in: &str) {
+    use crate::engine::track::MuhGif;
+    use mrmidi_gif::GifAnimation;
+
+    let paths = fs::read_dir(look_in).unwrap();
+    for path in paths {
+        //let new_animation = MuhGif::new(
+        //GifAnimation::load_from_path_buf(&path.unwrap().path()).await);
+        let pathbuf = path.unwrap().path();
+        let p = String::from(pathbuf.to_str().unwrap());
+        let new_texture = load_texture(&p).await;
+        track.sprites.push(new_texture.unwrap());
+    }
+}
+
+async fn data_(app_state: &mut AppState) {
+    for track in &mut app_state.tracks {
+        load_animations(track, "./assets/gifs/").await;
+        load_animations(track, "./assets/gifs/stolencantuse/").await;
+        load_textures(track, "./assets/textures/").await;
+    }
+}
+
+
 #[macroquad::main("mrmidi-r(eturn)s")]
 async fn main() {
     // engine::audio::print_audio_device_status();
@@ -198,17 +244,7 @@ async fn main() {
     }
     let mut app_state = AppState::new(tracks);
 
-    use crate::engine::track::MuhGif;
-    use mrmidi_gif::GifAnimation;
-    app_state.tracks[0].animations.push(MuhGif::new(
-        GifAnimation::load("assets/gifs/animation.gif".to_string()).await,
-    ));
-    app_state.tracks[1].animations.push(MuhGif::new(
-        GifAnimation::load(
-            "assets/gifs/stolencantuse/Jitter-Pink-perfect-loop-cubes.gif".to_string(),
-        )
-        .await,
-    ));
+    data_(&mut app_state).await;
 
     use std::time::SystemTime;
     let time_start = SystemTime::now();
@@ -277,27 +313,27 @@ async fn main() {
         render_post_process(&mut app_state);
 
         // Tree editor
-        if
-        /*is_key_down(KeyCode::LeftControl) &&*/
-        is_key_pressed(KeyCode::Tab) {
+        if is_key_pressed(KeyCode::Tab) { // Activate Editor GUI Action
             app_state.show_gui = !app_state.show_gui;
         }
-        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Right) {
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Right) { // Select Next Track Action
             app_state.selected_track =
                 std::cmp::min(app_state.selected_track + 1, app_state.tracks.len() - 1);
         }
-        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Left) {
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Left) { // Select Previous Track Action
             if app_state.selected_track != 0 {
                 app_state.selected_track = std::cmp::max(app_state.selected_track - 1, 0);
             }
         }
+
         if app_state.show_gui {
             render_gui(&mut app_state);
         }
 
-        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Key1) {
+        if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Key1) { // Toggle Tree Editor Open Action
             tree_editor.is_open = !tree_editor.is_open;
         }
+
         render_tree_editor(&mut tree_editor);
 
         frame += 1;

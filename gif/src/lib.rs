@@ -61,6 +61,13 @@ impl GifAnimation {
         Self::from_gif_bytes(&file_bytes)
     }
 
+    pub async fn load_from_path_buf(file_path: &std::path::PathBuf) -> Self {
+        let filename = String::from(file_path.to_str().unwrap());
+        let file_bytes = load_file(&filename).await.expect("Couldn't load file");
+        println!("loading: {}", filename);
+        Self::from_gif_bytes(&file_bytes)
+    }
+
     /// Instantiate a new `GifAnimation` from bytes.
     ///
     /// ```rust

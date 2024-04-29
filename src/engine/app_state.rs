@@ -27,6 +27,7 @@ pub struct AppState {
     pub color_picker_image: Image,
 
     pub show_gui: bool,
+    pub show_animations: bool,
 
     pub built_in_uniforms: BuiltInUniforms,
 
@@ -81,6 +82,7 @@ impl AppState {
             color_picker_texture,
             color_picker_image,
             show_gui: false,
+            show_animations: false,
 
             built_in_uniforms: BuiltInUniforms::new(),
             skin: root_ui().default_skin(),
@@ -375,6 +377,58 @@ pub fn render_gui(app_state: &mut AppState) {
                         }
                     }
                 });
+    }
+
+    if app_state.show_animations {
+        app_state.show_animations &=
+            widgets::Window::new(hash!(), vec2(140., 100.), vec2(210., 240.))
+                .label("Colorpicker")
+                .ui(&mut *root_ui(), |ui| {
+                    if ui.active_window_focused() == false {
+                        app_state.colorpicker_window = false;
+                    }
+
+                    let mut canvas = ui.canvas();
+                    let cursor = canvas.cursor();
+                    let mouse = mouse_position();
+                    let x = mouse.0 as i32 - cursor.x as i32;
+                    let y = mouse.1 as i32 - (cursor.y as i32 + 20);
+
+                    let color = app_state
+                        .color_picker_image
+                        .get_pixel(x.max(0).min(199) as u32, y.max(0).min(199) as u32);
+
+                    canvas.rect(
+                        Rect::new(cursor.x, cursor.y, 200.0, 18.0),
+                        Color::new(0.0, 0.0, 0.0, 1.0),
+                        Color::new(color.r, color.g, color.b, 1.0),
+                    );
+                    canvas.image(
+                        Rect::new(cursor.x, cursor.y + 20.0, 200.0, 200.0),
+                        app_state.color_picker_texture,
+                    );
+
+                    if x >= 0 && x < 200 && y >= 0 && y < 200 {
+                        canvas.rect(
+                            Rect::new(mouse.0 - 3.5, mouse.1 - 3.5, 7.0, 7.0),
+                            Color::new(0.3, 0.3, 0.3, 1.0),
+                            Color::new(1.0, 1.0, 1.0, 1.0),
+                        );
+
+                        if is_mouse_button_down(MouseButton::Left) {
+                            app_state.colorpicker_window = false;
+                            let uniform_name = app_state.color_picking_uniform.take().unwrap();
+
+                            track
+                                .uniforms
+                                .iter_mut()
+                                .find(|(name, _)| name == &uniform_name)
+                                .unwrap()
+                                .1 = Uniform::Color(vec3(color.r, color.g, color.b));
+                        }
+                    }
+                });
+
     }
 
     if need_update {

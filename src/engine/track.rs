@@ -29,24 +29,32 @@ impl Renderable for MuhGrid {
 pub struct MuhGif {
     animation: GifAnimation,
     position: Vec2,
+    is_playing: bool,
+    is_visible: bool,
 }
 impl MuhGif {
     pub fn new(animation: GifAnimation) -> Self {
         Self {
             position: vec2(animation.pos_x(), animation.pos_y()),
             animation,
+            is_playing: false,
+            is_visible: false,
         }
     }
 }
 
 impl Renderable for MuhGif {
     fn draw(&mut self) {
-        self.animation.draw_at(self.position.x, self.position.y);
+        if self.is_visible {
+            self.animation.draw_at(self.position.x, self.position.y);
+        }
     }
 }
 impl Updateable for MuhGif {
     fn tick(&mut self) {
-        self.animation.tick();
+        if self.is_playing {
+            self.animation.tick();
+        }
     }
 }
 
@@ -108,9 +116,12 @@ pub struct Track {
 
     pub animation: Option<GifAnimation>,
     pub animations: Vec<MuhGif>,
+
+    pub sprites: Vec<Texture2D>,
 }
 
 impl Track {
+    // macroquad::experimental::scene::
     pub fn new(name: String) -> Self {
         //let vertex_shader = std::fs::read_to_string("assets/shaders/default.vert").unwrap();
         //let fragment_shader = std::fs::read_to_string("assets/shaders/default.frag").unwrap();
@@ -185,6 +196,8 @@ impl Track {
 
             animation: None,
             animations: Vec::new(),
+
+            sprites: Vec::new(),
         }
     }
 
@@ -197,7 +210,7 @@ impl Track {
             clear_background(WHITE);
         }
 
-        draw_grid(
+        /*draw_grid(
             20,
             1.,
             Color::new(0.55, 0.55, 0.55, 0.75),
@@ -209,9 +222,11 @@ impl Track {
             MyMesh::Plane => draw_plane(vec3(0., 2., 0.), vec2(5., 5.), self.texture0, WHITE),
             MyMesh::Sphere => draw_sphere(vec3(0., 6., 0.), 5., self.texture0, WHITE),
             MyMesh::Cube => draw_cube(vec3(0., 5., 0.), vec3(10., 10., 10.), self.texture0, WHITE),
-        }
+        }*/
 
         set_camera(&self.camera_2d);
+
+        // Animation list
         for animation in &mut self.animations {
             animation.draw();
         }

@@ -1,0 +1,50 @@
+
+
+<Components>
+    <Playing value="false"></Playing>
+    <Visible value="false"></Visible>
+    <Tint value="#ff00ff"></Tint>
+    <Rotation value="0.0f"></Rotation>
+    <Rotation3d value="(0,0,0)"></Rotation3d>
+    <Position2d value="(0,0,0)"></Position2d>
+    <Position3d value ="(0,0,0)"></Position3d>
+    <RenderPosition2d value ="(0,0,0)"></RenderPosition2d>
+    <RenderPosition3d value ="(0,0,0)"></RenderPosition3d>
+    <Renderable></Renderable>
+    <Animation type="gif" src=""></Animation>
+    <Identifier value="hash!()"></Identifier> <!-- Entity.id, but need to reference somehow -->
+</Components>
+
+<EditorState>
+    <Selection track="0" animation="0"></Selection>
+</EditorState>
+
+<AppState asset_base_dir="./assets/">
+    <Track>
+        <Animations>
+            <Animation type="gif" src="animation.gif">
+                <Identifier value="123123-1231-23" />
+                <Position2d value="10,10" />
+                <Rotation value="0" />
+                <Playing value="false" />
+                <Visible value="true"/>
+                <Renderable/>
+                <!-- TODO: <Physics/> could be something to add? -->
+            </Gif>
+        </Animations>
+        <Models></Models>
+        <PostFX>
+            <Effect src="shaders/default" /><!-- Load both frag+vert if they exist, otherwise none -->
+        </PostFX>
+    </Track>
+    <PostFX>
+        <Effect>
+            <Frag value="shaders/mosh/twocolor" />
+            <Vert value="shaders/mosh/common" /> 
+            <Visible value="false" /> 
+            <Param0 value="0" /> 
+        </Effect>
+        <Effect frag-src="shaders/mosh/rgb_shift.frag" vert-src="shaders/mosh/common.vert" visible="false" param0="" param1="" param2="" param3="" param4="" param5="" param6="" param7=""  />
+        <Effect frag-src="shaders/mosh/mirror.frag" vert-src="shaders/mosh/common.vert" visible="false" param0="" param1="" param2="" param3="" param4="" param5="" param6="" param7="" />
+    </PostFX>
+</AppState>
